@@ -1,0 +1,35 @@
+{
+  "name": "@larry1123/yarn-plugin-script-lifecycles",
+  "version": "1.0.0",
+  "license": "Apache-2.0",
+  "main": "./src/index.ts",
+  "scripts": {
+    "pre-build": "rm -rf lib bundles",
+    "build": "yarn run build:plugin-script-lifecycles",
+    "build:plugin-script-lifecycles": "yarn run build:cjs && yarn run build:plugin",
+    "clean": "yarn run clean:plugin-script-lifecycles",
+    "clean:plugin-script-lifecycles": "rm -rf lib bundles",
+    "format": "yarn run format:package.json && yarn run format:prettier && yarn run lint:eslint --fix",
+    "pre-test": "echo pre",
+    "test": "echo test",
+    "post-test": "echo post",
+    "pre-testExclude": "echo pre",
+    "testExclude": "echo test",
+    "post-testExclude": "echo post",
+    "ztest": "yarn npm info @yarnpkg/core"
+  },
+  "dependencies": {
+    "@yarnpkg/core": "^2.1.1"
+  },
+  "devDependencies": {
+    "@yarnpkg/fslib": "^2.1.0",
+    "typescript-transform-paths": "^1.1.14"
+  },
+  "peerDependencies": {
+    "@yarnpkg/core": "*"
+  },
+  "optionalDependencies": {
+    "@types/node": "^12.12.41"
+  },
+  "pluginEnabled": false
+}

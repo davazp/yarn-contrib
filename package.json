@@ -1,0 +1,75 @@
+{
+  "name": "@larry1123/yarn-contrib",
+  "version": "1.0.0",
+  "private": true,
+  "repository": "git@gitlab.com:larry1123/yarn-contrib.git",
+  "license": "Apache-2.0",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "yarn workspaces foreach --parallel --topological-dev --exclude @larry1123/yarn-contrib run build",
+    "build:cjs": "ttsc --project $INIT_CWD/tsconfig.json --module commonjs --outDir $INIT_CWD/lib",
+    "build:esm": "ttsc --project $INIT_CWD/tsconfig.json --module esnext --outDir $INIT_CWD/esm",
+    "build:plugin": "cd $INIT_CWD && builder build plugin",
+    "docker:build": "docker buildx build .",
+    "docker:push:base": "docker push $(yarn run --silent docker:get:base-tag)",
+    "format": "yarn workspaces foreach --parallel --exclude @larry1123/yarn-contrib run format",
+    "format-package.json": "sort-package-json && sort-package-json **/*/package.json",
+    "format:package.json": "cd $INIT_CWD && sort-package-json",
+    "format:prettier": "prettier --write $INIT_CWD",
+    "git:get:build-hash": "echo $(git rev-parse HEAD)$(git diff-index --quiet HEAD -- || echo -dirty)",
+    "git:get:short-hash": "echo $(git rev-parse --short HEAD)$(git diff-index --quiet HEAD -- || echo -dirty)",
+    "git:pre-commit": "yarn run format && yarn run build && yarn version check",
+    "lint": "yarn run lint:eslint",
+    "lint:eslint": "eslint $INIT_CWD --ext .js,.ts",
+    "run:ts-node": "cd $INIT_CWD && ts-node",
+    "test": "yarn add --help"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn run git:pre-commit"
+    }
+  },
+  "lint-staged": {
+    "*.{json,md}": [
+      "prettier --write",
+      "git add"
+    ],
+    "*.{ts,js}": [
+      "prettier --write",
+      "eslint --fix",
+      "git add"
+    ],
+    "package.json": [
+      "sort-package-json",
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "dependencies": {
+    "@yarnpkg/cli": "^2.2.2",
+    "@yarnpkg/core": "^2.2.2",
+    "micromatch": "^4.0.2",
+    "ts-node": "^8.10.2",
+    "ttypescript": "^1.5.10",
+    "typescript": "^3.9.7",
+    "typescript-transform-paths": "^2.0.0"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^3.9.1",
+    "@typescript-eslint/parser": "^3.9.1",
+    "@yarnpkg/builder": "^2.1.0",
+    "eslint": "^7.7.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-eslint-comments": "^3.2.0",
+    "eslint-plugin-import": "^2.22.0",
+    "husky": "^4.2.5",
+    "lint-staged": "^10.2.11",
+    "prettier": "^2.0.5",
+    "sort-package-json": "patch:sort-package-json@^1.44.0#./.yarn/patches/sort-package-json.patch"
+  },
+  "engines": {
+    "node": ">=12.0.0"
+  }
+}
