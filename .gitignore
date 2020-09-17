@@ -1,6 +1,7 @@
 ### Yarn
 .yarn/*
 !.yarn/cache
+!.yarn/patches
 !.yarn/releases
 !.yarn/plugins
 !.yarn/versions
