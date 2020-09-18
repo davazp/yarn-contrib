@@ -15,7 +15,9 @@ export class ProductionInstallResolver implements Resolver {
   protected readonly resolver: Resolver
   protected readonly project: Project
 
-  constructor({ resolver, project }: { resolver: Resolver; project: Project }) {
+  constructor({
+    resolver, project 
+  }: { resolver: Resolver; project: Project }) {
     this.resolver = resolver
     this.project = project
   }
@@ -37,7 +39,8 @@ export class ProductionInstallResolver implements Resolver {
   ): boolean {
     if (locator.reference.startsWith(WorkspaceResolver.protocol)) {
       return false
-    } else {
+    }
+    else {
       return this.resolver.shouldPersistResolution(locator, opts)
     }
   }
@@ -68,7 +71,8 @@ export class ProductionInstallResolver implements Resolver {
     ) {
       const workplace = this.project.getWorkspaceByDescriptor(descriptor)
       return [workplace.anchoredLocator]
-    } else {
+    }
+    else {
       return this.resolver.getCandidates(descriptor, dependencies, opts)
     }
   }
@@ -78,7 +82,7 @@ export class ProductionInstallResolver implements Resolver {
       locator.reference.startsWith(WorkspaceResolver.protocol) &&
       locator.reference !== `${WorkspaceResolver.protocol}.`
     ) {
-      let workspace = this.project.getWorkspaceByLocator(locator)
+      const workspace = this.project.getWorkspaceByLocator(locator)
       return {
         ...locator,
         version: workspace.manifest.version || `0.0.0`,
@@ -86,7 +90,6 @@ export class ProductionInstallResolver implements Resolver {
         linkType: LinkType.SOFT,
         dependencies: new Map([
           ...workspace.manifest.dependencies,
-          ...workspace.manifest.devDependencies,
         ]),
         peerDependencies: new Map([...workspace.manifest.peerDependencies]),
         dependenciesMeta: workspace.manifest.dependenciesMeta,
@@ -97,8 +100,11 @@ export class ProductionInstallResolver implements Resolver {
     return this.resolver.resolve(locator, opts)
   }
 
-  async getSatisfying(_descriptor: Descriptor, _references: Array<string>, _opts: ResolveOptions): Promise<Array<Locator> | null> {
+  async getSatisfying(
+    _descriptor: Descriptor,
+    _references: Array<string>,
+    _opts: ResolveOptions,
+  ): Promise<Array<Locator> | null> {
     return null
   }
-
 }

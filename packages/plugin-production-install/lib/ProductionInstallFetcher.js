@@ -72,7 +72,10 @@ class ProductionInstallFetcher {
                     immutable: true,
                     check: false,
                 });
-                await workspace.project.install({ report, cache });
+                await workspace.project.install({
+                    report,
+                    cache,
+                });
             }
             catch (_) {
                 await workspace.project.resolveEverything({

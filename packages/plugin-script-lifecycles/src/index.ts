@@ -1,12 +1,22 @@
-
 // Types
 
-import type {Readable, Writable} from 'stream'
+import type {
+  Readable, Writable 
+} from 'stream'
 
-import type {PortablePath} from '@yarnpkg/fslib'
-import type {Hooks, Locator, Plugin, Project} from '@yarnpkg/core'
+import type {
+  PortablePath 
+} from '@yarnpkg/fslib'
+import type {
+  Hooks, Locator, Plugin, Project 
+} from '@yarnpkg/core'
 // Imports
-import {MessageName, scriptUtils, SettingsType, StreamReport} from '@yarnpkg/core'
+import {
+  MessageName,
+  scriptUtils,
+  SettingsType,
+  StreamReport,
+} from '@yarnpkg/core'
 
 type ProcessEnvironment = { [key: string]: string }
 type PluginHooks = {
@@ -44,10 +54,12 @@ async function wrapScriptExecution(
   const shouldReport = extra.env['plugin_script_lifecycles_silent'] != undefined
 
   return async () => {
-    const report = shouldReport ? new StreamReport({
-      configuration,
-      stdout: extra.stdout,
-    }) : null
+    const report = shouldReport
+      ? new StreamReport({
+        configuration,
+        stdout: extra.stdout,
+      })
+      : null
 
     const workspaceByCwd = project.tryWorkspaceByLocator(locator)
     if (workspaceByCwd === null) {
@@ -56,18 +68,14 @@ async function wrapScriptExecution(
     const manifest = workspaceByCwd.manifest
     const script = manifest.scripts.get(scriptName)
     if (typeof script === `undefined`) {
-      return 1;
+      return 1
     }
 
     async function tryLifecycleScript(lifecycle: string): Promise<number> {
       const lifecycleScriptName = `${lifecycle}${scriptName}`
       if (
         lifecycleScriptEnabled &&
-        (await scriptUtils.hasPackageScript(
-          locator,
-          lifecycleScriptName,
-          {project},
-        ))
+        (await scriptUtils.hasPackageScript(locator, lifecycleScriptName, {project}))
       ) {
         const streamReporter = report?.createStreamReporter()
         try {
@@ -121,10 +129,17 @@ async function wrapScriptExecution(
         finally {
           streamReporter?.destroy()
         }
-      };
-      const main = await report?.startTimerPromise(`Running ${scriptName}`, runMainScript) ?? await runMainScript()
+      }
+      const main =
+        (await report?.startTimerPromise(
+          `Running ${scriptName}`,
+          runMainScript,
+        )) ?? (await runMainScript())
       if (main !== 0) {
-        report?.reportError(MessageName.EXCEPTION, `Script '${scriptName}' returned non-zero return code. (${main})`)
+        report?.reportError(
+          MessageName.EXCEPTION,
+          `Script '${scriptName}' returned non-zero return code. (${main})`,
+        )
         return main
       }
       if (!scriptName.startsWith(prefixes.post)) {
@@ -142,7 +157,7 @@ async function wrapScriptExecution(
 }
 
 const plugin: Plugin<PluginHooks> = {
-  hooks: {wrapScriptExecution},
+  hooks: { wrapScriptExecution },
   configuration: {
     userScriptLifecycleExcludes: {
       description: '',

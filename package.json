@@ -20,7 +20,7 @@
     "format:prettier": "prettier --write $INIT_CWD",
     "git:get:build-hash": "echo $(git rev-parse HEAD)$(git diff-index --quiet HEAD -- || echo -dirty)",
     "git:get:short-hash": "echo $(git rev-parse --short HEAD)$(git diff-index --quiet HEAD -- || echo -dirty)",
-    "git:pre-commit": "yarn run format && yarn run build && yarn version check",
+    "git:pre-commit": "yarn version check",
     "lint": "yarn run lint:eslint",
     "lint:eslint": "eslint $INIT_CWD --ext .js,.ts",
     "run:ts-node": "cd $INIT_CWD && ts-node",

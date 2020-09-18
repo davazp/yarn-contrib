@@ -64,7 +64,7 @@ class ProdInstall extends clipanion_1.Command {
             });
             await report.startTimerPromise('Modifying to contain only production dependencies', async () => {
                 const packagePath = fslib_1.ppath.join(outDirectoryPath, fslib_1.toFilename('package.json'));
-                const pak = await fslib_1.xfs.readJsonPromise(packagePath);
+                const pak = (await fslib_1.xfs.readJsonPromise(packagePath));
                 if (pak.devDependencies) {
                     delete pak.devDependencies;
                 }
@@ -125,7 +125,5 @@ __decorate([
 __decorate([
     clipanion_1.Command.Path('prod-install')
 ], ProdInstall.prototype, "execute", null);
-const plugin = {
-    commands: [ProdInstall],
-};
+const plugin = { commands: [ProdInstall] };
 exports.default = plugin;

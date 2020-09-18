@@ -19,13 +19,13 @@ async function copyFolderRecursivePromise(source, target, exclude = []) {
         for (const file of files) {
             const curSource = fslib_1.ppath.join(source, file);
             const curTarget = fslib_1.ppath.join(target, file);
-            function isExcluded() {
+            const isExcluded = () => {
                 for (const portablePath of exclude) {
                     if (curSource.endsWith(portablePath))
                         return true;
                 }
                 return false;
-            }
+            };
             if (!isExcluded()) {
                 if ((await fslib_1.xfs.lstatPromise(curSource)).isDirectory()) {
                     await copyFolderRecursivePromise(curSource, curTarget, exclude);

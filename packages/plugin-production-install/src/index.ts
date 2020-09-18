@@ -6,20 +6,32 @@ import {
   StreamReport,
   CommandContext,
 } from '@yarnpkg/core'
-import { WorkspaceRequiredError } from '@yarnpkg/cli'
-import { PortablePath, ppath, toFilename, xfs } from '@yarnpkg/fslib'
-import { Command, Usage } from 'clipanion'
+import {
+  WorkspaceRequiredError 
+} from '@yarnpkg/cli'
+import {
+  PortablePath, ppath, toFilename, xfs 
+} from '@yarnpkg/fslib'
+import {
+  Command, Usage 
+} from 'clipanion'
 
-import { copyFile, copyFolder } from './util'
-import { ProductionInstallFetcher } from './ProductionInstallFetcher'
-import { ProductionInstallResolver } from './ProductionInstallResolver'
+import {
+  copyFile, copyFolder 
+} from './util'
+import {
+  ProductionInstallFetcher 
+} from './ProductionInstallFetcher'
+import {
+  ProductionInstallResolver 
+} from './ProductionInstallResolver'
 
 class ProdInstall extends Command<CommandContext> {
   @Command.String()
   outDirectory!: string
 
   @Command.Boolean(`--json`)
-  json: boolean = false
+  json = false
 
   @Command.Boolean(`--silent`, { hidden: true })
   silent?: boolean = false
@@ -33,12 +45,14 @@ class ProdInstall extends Command<CommandContext> {
   })
 
   @Command.Path('prod-install')
-  async execute() {
+  async execute(): Promise<0 | 1> {
     const configuration = await Configuration.find(
       this.context.cwd,
       this.context.plugins,
     )
-    const { project, workspace } = await Project.find(
+    const {
+      project, workspace 
+    } = await Project.find(
       configuration,
       this.context.cwd,
     )
@@ -117,7 +131,9 @@ class ProdInstall extends Command<CommandContext> {
               outDirectoryPath,
               toFilename('package.json'),
             )
-            const pak = await xfs.readJsonPromise(packagePath)
+            const pak = (await xfs.readJsonPromise(packagePath)) as {
+              devDependencies: unknown
+            }
             if (pak.devDependencies) {
               delete pak.devDependencies
             }
@@ -177,8 +193,6 @@ class ProdInstall extends Command<CommandContext> {
   }
 }
 
-const plugin: Plugin = {
-  commands: [ProdInstall],
-}
+const plugin: Plugin = { commands: [ProdInstall] }
 
 export default plugin

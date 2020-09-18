@@ -16,8 +16,12 @@ import {
   Workspace,
   WorkspaceResolver,
 } from '@yarnpkg/core'
-import { npath, PortablePath, xfs, ZipFS } from '@yarnpkg/fslib'
-import { packUtils } from '@yarnpkg/plugin-pack'
+import {
+  npath, PortablePath, xfs, ZipFS 
+} from '@yarnpkg/fslib'
+import {
+  packUtils 
+} from '@yarnpkg/plugin-pack'
 
 export class ProductionInstallFetcher implements Fetcher {
   protected readonly multiFetcher: Fetcher
@@ -60,7 +64,8 @@ export class ProductionInstallFetcher implements Fetcher {
       locator.reference !== `${WorkspaceResolver.protocol}.`
     ) {
       return null
-    } else {
+    }
+    else {
       return this.multiFetcher.getLocalPath(locator, opts)
     }
   }
@@ -96,7 +101,8 @@ export class ProductionInstallFetcher implements Fetcher {
         prefixPath: structUtils.getIdentVendorPath(locator),
         checksum,
       }
-    } else if (locator.reference.startsWith('npm:')) {
+    }
+    else if (locator.reference.startsWith('npm:')) {
       const cachePath = this.cache.getLocatorPath(locator, expectedChecksum)
       const outCachePath = opts.cache.getLocatorPath(locator, expectedChecksum)
       if (cachePath && (await xfs.existsPromise(cachePath))) {
@@ -106,7 +112,8 @@ export class ProductionInstallFetcher implements Fetcher {
               npath.fromPortablePath(cachePath),
               npath.fromPortablePath(outCachePath),
             )
-          } catch (e) {
+          }
+          catch (e) {
             if (!(await xfs.existsPromise(outCachePath))) {
               opts.report.reportError(MessageName.FETCH_FAILED, e)
             }
@@ -119,7 +126,9 @@ export class ProductionInstallFetcher implements Fetcher {
 
   async packWorkspace(
     locator: Locator,
-    { report }: FetchOptions,
+    {
+      report 
+    }: FetchOptions,
   ): Promise<ZipFS> {
     const workspace = this.project.getWorkspaceByLocator(locator)
     if (await packUtils.hasPackScripts(workspace)) {
@@ -128,8 +137,12 @@ export class ProductionInstallFetcher implements Fetcher {
           immutable: true,
           check: false,
         })
-        await workspace.project.install({ report, cache })
-      } catch (_) {
+        await workspace.project.install({
+          report,
+          cache,
+        })
+      }
+      catch (_) {
         await workspace.project.resolveEverything({
           lockfileOnly: true,
           report,

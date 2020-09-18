@@ -40,7 +40,7 @@ class ProductionInstallResolver {
     async resolve(locator, opts) {
         if (locator.reference.startsWith(core_1.WorkspaceResolver.protocol) &&
             locator.reference !== `${core_1.WorkspaceResolver.protocol}.`) {
-            let workspace = this.project.getWorkspaceByLocator(locator);
+            const workspace = this.project.getWorkspaceByLocator(locator);
             return {
                 ...locator,
                 version: workspace.manifest.version || `0.0.0`,
@@ -48,7 +48,6 @@ class ProductionInstallResolver {
                 linkType: core_1.LinkType.SOFT,
                 dependencies: new Map([
                     ...workspace.manifest.dependencies,
-                    ...workspace.manifest.devDependencies,
                 ]),
                 peerDependencies: new Map([...workspace.manifest.peerDependencies]),
                 dependenciesMeta: workspace.manifest.dependenciesMeta,

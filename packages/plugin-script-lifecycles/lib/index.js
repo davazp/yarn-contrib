@@ -14,10 +14,12 @@ async function wrapScriptExecution(executor, project, locator, scriptName, extra
     const shouldReport = extra.env['plugin_script_lifecycles_silent'] != undefined;
     return async () => {
         var _a;
-        const report = shouldReport ? new core_1.StreamReport({
-            configuration,
-            stdout: extra.stdout,
-        }) : null;
+        const report = shouldReport
+            ? new core_1.StreamReport({
+                configuration,
+                stdout: extra.stdout,
+            })
+            : null;
         const workspaceByCwd = project.tryWorkspaceByLocator(locator);
         if (workspaceByCwd === null) {
             return executor();
@@ -72,7 +74,7 @@ async function wrapScriptExecution(executor, project, locator, scriptName, extra
                     streamReporter === null || streamReporter === void 0 ? void 0 : streamReporter.destroy();
                 }
             };
-            const main = (_a = await (report === null || report === void 0 ? void 0 : report.startTimerPromise(`Running ${scriptName}`, runMainScript))) !== null && _a !== void 0 ? _a : await runMainScript();
+            const main = (_a = (await (report === null || report === void 0 ? void 0 : report.startTimerPromise(`Running ${scriptName}`, runMainScript)))) !== null && _a !== void 0 ? _a : (await runMainScript());
             if (main !== 0) {
                 report === null || report === void 0 ? void 0 : report.reportError(core_1.MessageName.EXCEPTION, `Script '${scriptName}' returned non-zero return code. (${main})`);
                 return main;
