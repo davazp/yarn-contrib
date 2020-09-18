@@ -15,8 +15,7 @@
     "post-test": "echo post",
     "pre-testExclude": "echo pre",
     "testExclude": "echo test",
-    "post-testExclude": "echo post",
-    "ztest": "yarn npm info @yarnpkg/core"
+    "post-testExclude": "echo post"
   },
   "dependencies": {
     "@yarnpkg/core": "^2.2.2"

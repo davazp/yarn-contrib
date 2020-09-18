@@ -4,8 +4,9 @@
 !.yarn/releases
 !.yarn/plugins
 
-tools/**/dist/
-input.development.json
+
+### builds
+packages/**/lib/
 
 # Git
 .git/
