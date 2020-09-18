@@ -19,7 +19,7 @@ const prefixes = {
 }
 
 async function wrapScriptExecution(
-  _executor: () => Promise<number>,
+  executor: () => Promise<number>,
   project: Project,
   locator: Locator,
   scriptName: string,
@@ -41,13 +41,18 @@ async function wrapScriptExecution(
   )
   const lifecycleScriptEnabled = !userScriptLifecycleExcludes.get(scriptName)
 
+  const shouldReport = extra.env['plugin_script_lifecycles_silent'] != undefined
+
   return async () => {
-    const report = new StreamReport({
+    const report = shouldReport ? new StreamReport({
       configuration,
       stdout: extra.stdout,
-    })
+    }) : null
 
-    const workspaceByCwd = project.getWorkspaceByLocator(locator)
+    const workspaceByCwd = project.tryWorkspaceByLocator(locator)
+    if (workspaceByCwd === null) {
+      return executor()
+    }
     const manifest = workspaceByCwd.manifest
     const script = manifest.scripts.get(scriptName)
     if (typeof script === `undefined`) {
@@ -64,7 +69,7 @@ async function wrapScriptExecution(
           {project},
         ))
       ) {
-        const streamReporter = report.createStreamReporter()
+        const streamReporter = report?.createStreamReporter()
         try {
           return await scriptUtils.executePackageScript(
             locator,
@@ -74,13 +79,13 @@ async function wrapScriptExecution(
               cwd: extra.cwd,
               project,
               stdin: extra.stdin,
-              stdout: streamReporter,
-              stderr: streamReporter,
+              stdout: streamReporter ?? extra.stdout,
+              stderr: streamReporter ?? extra.stderr,
             },
           )
         }
         finally {
-          streamReporter.destroy()
+          streamReporter?.destroy()
         }
       }
       else {
@@ -95,35 +100,31 @@ async function wrapScriptExecution(
           return pre
         }
       }
-      const main = await report.startTimerPromise(
-        `Running ${scriptName}`,
-        async () => {
-          report.reportInfo(null, `➤ ${script}`)
-          const streamReporter = report.createStreamReporter()
-          try {
-            // TODO FIX STREAM REPORTER
-            return await scriptUtils.executePackageShellcode(
-              locator,
-              script,
-              extra.args,
-              {
-                cwd: extra.cwd,
-                project,
-                stdin: extra.stdin,
-                stdout: streamReporter,
-                // stdout: extra.stdout,
-                stderr: streamReporter,
-                // stderr: extra.stderr,
-              },
-            )
-          }
-          finally {
-            streamReporter.destroy()
-          }
-        },
-      )
+
+      const runMainScript = async () => {
+        report?.reportInfo(null, `➤ ${script}`)
+        const streamReporter = report?.createStreamReporter()
+        try {
+          return await scriptUtils.executePackageShellcode(
+            locator,
+            script,
+            extra.args,
+            {
+              cwd: extra.cwd,
+              project,
+              stdin: extra.stdin,
+              stdout: streamReporter ?? extra.stdout,
+              stderr: streamReporter ?? extra.stderr,
+            },
+          )
+        }
+        finally {
+          streamReporter?.destroy()
+        }
+      };
+      const main = await report?.startTimerPromise(`Running ${scriptName}`, runMainScript) ?? await runMainScript()
       if (main !== 0) {
-        report.reportError(MessageName.EXCEPTION, `Script '${scriptName}' returned non-zero return code. (${main})`)
+        report?.reportError(MessageName.EXCEPTION, `Script '${scriptName}' returned non-zero return code. (${main})`)
         return main
       }
       if (!scriptName.startsWith(prefixes.post)) {
@@ -134,7 +135,7 @@ async function wrapScriptExecution(
       }
     }
     finally {
-      await report.finalize()
+      await report?.finalize()
     }
     return 0
   }

@@ -7,16 +7,21 @@ const prefixes = {
     pre: 'pre-',
     post: 'post-',
 };
-async function wrapScriptExecution(_executor, project, locator, scriptName, extra) {
+async function wrapScriptExecution(executor, project, locator, scriptName, extra) {
     const { configuration } = project;
     const userScriptLifecycleExcludes = configuration.get('userScriptLifecycleExcludes');
     const lifecycleScriptEnabled = !userScriptLifecycleExcludes.get(scriptName);
+    const shouldReport = extra.env['plugin_script_lifecycles_silent'] != undefined;
     return async () => {
-        const report = new core_1.StreamReport({
+        var _a;
+        const report = shouldReport ? new core_1.StreamReport({
             configuration,
             stdout: extra.stdout,
-        });
-        const workspaceByCwd = project.getWorkspaceByLocator(locator);
+        }) : null;
+        const workspaceByCwd = project.tryWorkspaceByLocator(locator);
+        if (workspaceByCwd === null) {
+            return executor();
+        }
         const manifest = workspaceByCwd.manifest;
         const script = manifest.scripts.get(scriptName);
         if (typeof script === `undefined`) {
@@ -26,18 +31,18 @@ async function wrapScriptExecution(_executor, project, locator, scriptName, extr
             const lifecycleScriptName = `${lifecycle}${scriptName}`;
             if (lifecycleScriptEnabled &&
                 (await core_1.scriptUtils.hasPackageScript(locator, lifecycleScriptName, { project }))) {
-                const streamReporter = report.createStreamReporter();
+                const streamReporter = report === null || report === void 0 ? void 0 : report.createStreamReporter();
                 try {
                     return await core_1.scriptUtils.executePackageScript(locator, lifecycleScriptName, [], {
                         cwd: extra.cwd,
                         project,
                         stdin: extra.stdin,
-                        stdout: streamReporter,
-                        stderr: streamReporter,
+                        stdout: streamReporter !== null && streamReporter !== void 0 ? streamReporter : extra.stdout,
+                        stderr: streamReporter !== null && streamReporter !== void 0 ? streamReporter : extra.stderr,
                     });
                 }
                 finally {
-                    streamReporter.destroy();
+                    streamReporter === null || streamReporter === void 0 ? void 0 : streamReporter.destroy();
                 }
             }
             else {
@@ -51,26 +56,25 @@ async function wrapScriptExecution(_executor, project, locator, scriptName, extr
                     return pre;
                 }
             }
-            const main = await report.startTimerPromise(`Running ${scriptName}`, async () => {
-                report.reportInfo(null, `➤ ${script}`);
-                const streamReporter = report.createStreamReporter();
+            const runMainScript = async () => {
+                report === null || report === void 0 ? void 0 : report.reportInfo(null, `➤ ${script}`);
+                const streamReporter = report === null || report === void 0 ? void 0 : report.createStreamReporter();
                 try {
-                    // TODO FIX STREAM REPORTER
                     return await core_1.scriptUtils.executePackageShellcode(locator, script, extra.args, {
                         cwd: extra.cwd,
                         project,
                         stdin: extra.stdin,
-                        stdout: streamReporter,
-                        // stdout: extra.stdout,
-                        stderr: streamReporter,
+                        stdout: streamReporter !== null && streamReporter !== void 0 ? streamReporter : extra.stdout,
+                        stderr: streamReporter !== null && streamReporter !== void 0 ? streamReporter : extra.stderr,
                     });
                 }
                 finally {
-                    streamReporter.destroy();
+                    streamReporter === null || streamReporter === void 0 ? void 0 : streamReporter.destroy();
                 }
-            });
+            };
+            const main = (_a = await (report === null || report === void 0 ? void 0 : report.startTimerPromise(`Running ${scriptName}`, runMainScript))) !== null && _a !== void 0 ? _a : await runMainScript();
             if (main !== 0) {
-                report.reportError(core_1.MessageName.EXCEPTION, `Script '${scriptName}' returned non-zero return code. (${main})`);
+                report === null || report === void 0 ? void 0 : report.reportError(core_1.MessageName.EXCEPTION, `Script '${scriptName}' returned non-zero return code. (${main})`);
                 return main;
             }
             if (!scriptName.startsWith(prefixes.post)) {
@@ -81,7 +85,7 @@ async function wrapScriptExecution(_executor, project, locator, scriptName, extr
             }
         }
         finally {
-            await report.finalize();
+            await (report === null || report === void 0 ? void 0 : report.finalize());
         }
         return 0;
     };
