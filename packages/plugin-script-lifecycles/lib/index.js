@@ -60,10 +60,9 @@ async function wrapScriptExecution(_executor, project, locator, scriptName, extr
                         cwd: extra.cwd,
                         project,
                         stdin: extra.stdin,
-                        // stdout: streamReporter,
-                        stdout: extra.stdout,
-                        // stderr: streamReporter,
-                        stderr: extra.stderr,
+                        stdout: streamReporter,
+                        // stdout: extra.stdout,
+                        stderr: streamReporter,
                     });
                 }
                 finally {

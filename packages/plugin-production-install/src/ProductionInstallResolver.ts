@@ -96,4 +96,9 @@ export class ProductionInstallResolver implements Resolver {
     }
     return this.resolver.resolve(locator, opts)
   }
+
+  async getSatisfying(_descriptor: Descriptor, _references: Array<string>, _opts: ResolveOptions): Promise<Array<Locator> | null> {
+    return null
+  }
+
 }

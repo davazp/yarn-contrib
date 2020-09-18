@@ -58,5 +58,8 @@ class ProductionInstallResolver {
         }
         return this.resolver.resolve(locator, opts);
     }
+    async getSatisfying(_descriptor, _references, _opts) {
+        return null;
+    }
 }
 exports.ProductionInstallResolver = ProductionInstallResolver;
