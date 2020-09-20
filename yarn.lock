@@ -266,8 +266,10 @@ __metadata:
     "@yarnpkg/core": ^2.2.2
     eslint: ^7.9.0
     eslint-config-prettier: ^6.11.0
+    eslint-plugin-disable: ^2.0.1
     eslint-plugin-eslint-comments: ^3.2.0
     eslint-plugin-import: ^2.22.0
+    eslint-plugin-modules-newline: ^0.0.4
     husky: ^4.3.0
     lint-staged: ^10.4.0
     micromatch: ^4.0.2
@@ -2137,6 +2139,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eslint-plugin-disable@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "eslint-plugin-disable@npm:2.0.1"
+  dependencies:
+    eslint: ">=0.16.0"
+    resolve: ^1.1.6
+  peerDependencies:
+    eslint: ">=0.16.0"
+  checksum: 35abd8c42c3bd0a6f8134ea9a7c9027ba1c6b6c26c0c44576e44b021d650c989e0c300a0a9eb6e715e145987ffe6cd1dbadbd2b233bb41e929b74a6959e5c973
+  languageName: node
+  linkType: hard
+
 "eslint-plugin-eslint-comments@npm:^3.2.0":
   version: 3.2.0
   resolution: "eslint-plugin-eslint-comments@npm:3.2.0"
@@ -2169,6 +2183,15 @@ __metadata:
   peerDependencies:
     eslint: ^2 || ^3 || ^4 || ^5 || ^6 || ^7.2.0
   checksum: ad41aec63d8986e0a0e279bb2877e1f36029573b8f310112159509fd52d7344a2e91bd4bb9c6d2b131838a3538a0bc5e3998217df1b88304df9872ad9fb30c84
+  languageName: node
+  linkType: hard
+
+"eslint-plugin-modules-newline@npm:^0.0.4":
+  version: 0.0.4
+  resolution: "eslint-plugin-modules-newline@npm:0.0.4"
+  dependencies:
+    requireindex: ~1.1.0
+  checksum: 8c263bce754866ca7d1329fff279973934a1707a00d5182184a21c5b844bef61d41040690f52242f41dfea82111000f884b0cccb3d3feb83f900ee587e7e8903
   languageName: node
   linkType: hard
 
@@ -2205,7 +2228,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:^7.9.0":
+"eslint@npm:>=0.16.0, eslint@npm:^7.9.0":
   version: 7.9.0
   resolution: "eslint@npm:7.9.0"
   dependencies:
@@ -4166,6 +4189,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"requireindex@npm:~1.1.0":
+  version: 1.1.0
+  resolution: "requireindex@npm:1.1.0"
+  checksum: 571a7c97bc3c881321c757c8a1bee09da41eeefab8294bd7858bc4f108eab73e4ad4ce80f8206e7c20ffa1482eda842f3b3021f28ab543ddfc1756272659c71e
+  languageName: node
+  linkType: hard
+
 "resolve-alpn@npm:^1.0.0":
   version: 1.0.0
   resolution: "resolve-alpn@npm:1.0.0"
@@ -4180,7 +4210,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"resolve@>=1.9.0, resolve@^1.10.0, resolve@^1.13.1, resolve@^1.17.0, resolve@^1.3.2":
+"resolve@>=1.9.0, resolve@^1.1.6, resolve@^1.10.0, resolve@^1.13.1, resolve@^1.17.0, resolve@^1.3.2":
   version: 1.17.0
   resolution: "resolve@npm:1.17.0"
   dependencies:
@@ -4189,7 +4219,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"resolve@patch:resolve@>=1.9.0#builtin<compat/resolve>, resolve@patch:resolve@^1.10.0#builtin<compat/resolve>, resolve@patch:resolve@^1.13.1#builtin<compat/resolve>, resolve@patch:resolve@^1.17.0#builtin<compat/resolve>, resolve@patch:resolve@^1.3.2#builtin<compat/resolve>":
+"resolve@patch:resolve@>=1.9.0#builtin<compat/resolve>, resolve@patch:resolve@^1.1.6#builtin<compat/resolve>, resolve@patch:resolve@^1.10.0#builtin<compat/resolve>, resolve@patch:resolve@^1.13.1#builtin<compat/resolve>, resolve@patch:resolve@^1.17.0#builtin<compat/resolve>, resolve@patch:resolve@^1.3.2#builtin<compat/resolve>":
   version: 1.17.0
   resolution: "resolve@patch:resolve@npm%3A1.17.0#builtin<compat/resolve>::version=1.17.0&hash=3388aa"
   dependencies:

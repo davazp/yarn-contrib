@@ -14,12 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProductionInstallFetcher = void 0;
-const fs_1 = __importDefault(require("fs"));
 const core_1 = require("@yarnpkg/core");
 const fslib_1 = require("@yarnpkg/fslib");
 const plugin_pack_1 = require("@yarnpkg/plugin-pack");
@@ -67,7 +63,7 @@ class ProductionInstallFetcher {
             if (cachePath && (await fslib_1.xfs.existsPromise(cachePath))) {
                 if (outCachePath && !(await fslib_1.xfs.existsPromise(outCachePath))) {
                     try {
-                        fs_1.default.linkSync(fslib_1.npath.fromPortablePath(cachePath), fslib_1.npath.fromPortablePath(outCachePath));
+                        await fslib_1.xfs.linkPromise(cachePath, outCachePath);
                     }
                     catch (e) {
                         if (!(await fslib_1.xfs.existsPromise(outCachePath))) {

@@ -1,11 +1,11 @@
-Yarn Plugin Script Lifecycles
-===
+# Yarn Plugin Script Lifecycles
 
 This plugin will run `pre-` and `post-` scripts for each script within a project.
 `userScriptLifecycleExcludes` can be set within yarn config to exclude a list of scripts.
 Logs will be formatted so output is more understandable between scripts, within the same run.
 
 This is an example output.
+
 ```
 ➤ YN0000: ➤ YN0000: ┌ Running pre-test
 ➤ YN0000: ➤ YN0000: │ ➤ echo pre
@@ -25,8 +25,7 @@ This is an example output.
 
 ```
 
-Install instructions
----
+## Install instructions
 
 ```
 TODO

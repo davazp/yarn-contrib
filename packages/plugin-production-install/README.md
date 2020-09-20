@@ -1,5 +1,4 @@
-Yarn Plugin Production Install
-===
+# Yarn Plugin Production Install
 
 This plugin will create a minimal yarn install for a workspace.
 `yarn prod-install outDir`
@@ -7,15 +6,13 @@ The resulting installation will include only `dependencies` required for product
 It excludes `devDependencies`. The yarn cache will be copied and trimmed accordingly.
 Yarn settings and plugins are included.
 
-Install instructions
----
+## Install instructions
 
 ```
 TODO
 ```
 
-Example Dockerfile
----
+## Example Dockerfile
 
 This example dockerfile is expected to be built with `docker buildx build`
 
@@ -29,15 +26,13 @@ FROM node:12 as install-prep
 
 ARG BUILD_DIR=packages/demo
 
-ENV NORUNPOSTINSTALL=true
-
 WORKDIR /opt/demo
 
 COPY ${BUILD_DIR}/package.json ${BUILD_DIR}/
 COPY package.json .
 COPY yarn.lock .
 
-## 
+##
 ## Only include non stateful files from yarn
 ## If your set has files elsewhere you may need to change this
 ## to include or exclude yarn files as needed.
@@ -51,7 +46,7 @@ COPY .yarn/ /opt/demo/.yarn/
 COPY .yarnrc.yml /opt/demo/.yarnrc.yml
 
 ##
-## If your workspace depends on any other workspace 
+## If your workspace depends on any other workspace
 ## include them here also
 ## ie: COPY packages/requiredbydemo/ /opt/demo/packages/requiredbydemo/
 ## You could optionly run the install out of docker however if you do
@@ -66,7 +61,7 @@ COPY .yarnrc.yml /opt/demo/.yarnrc.yml
 ## Install build depanciyes
 ##
 FROM install-prep as install-dev
-ARG BUILD_DIR=packages/demo/demo
+ARG BUILD_DIR=packages/demo
 
 WORKDIR /opt/demo
 
@@ -94,7 +89,7 @@ WORKDIR /opt/demo/${BUILD_DIR}
 
 ##
 ## This is our secret weapon
-## Our nice plugin creates a yarn install just for us 
+## Our nice plugin creates a yarn install just for us
 ##
 RUN yarn prod-install /opt/demo/prod
 
@@ -150,7 +145,7 @@ RUN --mount=type=cache,sharing=locked,target=/var/cache/apt \
 COPY --chown=node:node --from=install-prod /opt/demo/prod/ /opt/demo/
 COPY --chown=node:node --from=build /opt/demo/${BUILD_DIR}/dist/ /opt/demo/
 
-## 
+##
 ## How you start and build your app is up to you this is just an example
 ##
 

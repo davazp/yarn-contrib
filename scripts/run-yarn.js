@@ -25,7 +25,10 @@ require('ts-node').register({
 
 const micromatch = require(`micromatch`)
 
-const { main, getPluginConfiguration } = require('@yarnpkg/cli')
+const {
+ main, getPluginConfiguration 
+} = require('@yarnpkg/cli')
+
 global.YARN_VERSION = require(`@yarnpkg/cli/package.json`).version
 
 const pluginsDir = `${__dirname}/../packages/`
@@ -43,11 +46,13 @@ function getExtendedPluginConfiguration() {
      * @returns {boolean}
      */
     function checkIfDisabled() {
-      if (disabledPlugins &&
+      if (
+        disabledPlugins &&
         micromatch.match(
           [folder, folder.replace(`plugin-`, ``)],
           disabledPlugins,
-        ).length > 0) {
+        ).length > 0
+      ) {
         return true
       }
       try {
@@ -68,7 +73,8 @@ function getExtendedPluginConfiguration() {
     try {
       require(`${pluginsDir}${folder}`)
       isRequirable = true
-    } catch (e) {
+    }
+    catch (e) {
       console.warn(`Disabled non-requirable plugin ${folder}: ${e.message}`)
       isRequirable = false
     }

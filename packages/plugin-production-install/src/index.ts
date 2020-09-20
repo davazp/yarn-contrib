@@ -26,14 +26,19 @@ import {
   WorkspaceRequiredError 
 } from '@yarnpkg/cli'
 import {
-  PortablePath, ppath, toFilename, xfs 
+  PortablePath,
+  ppath,
+  toFilename,
+  xfs 
 } from '@yarnpkg/fslib'
 import {
-  Command, Usage 
+  Command,
+  Usage 
 } from 'clipanion'
 
 import {
-  copyFile, copyFolder 
+  copyFile,
+  copyFolder 
 } from './util'
 import {
   ProductionInstallFetcher 
@@ -116,21 +121,21 @@ class ProdInstall extends Command<CommandContext> {
               toFilename('package.json'),
             )
             const yarnExcludes: Array<PortablePath> = []
-            if (configuration.get('bstatePath')) {
-              yarnExcludes.push(configuration.get('bstatePath'))
+            const checkConfigurationToExclude = (config: string) => {
+              try {
+                if (configuration.get(config)) {
+                  yarnExcludes.push(configuration.get(config))
+                }
+              }
+              catch (_) {
+                // noop
+              }
             }
-            if (configuration.get('installStatePath')) {
-              yarnExcludes.push(configuration.get('installStatePath'))
-            }
-            if (configuration.get('cacheFolder')) {
-              yarnExcludes.push(configuration.get('cacheFolder'))
-            }
-            if (configuration.get('pnpUnpluggedFolder')) {
-              yarnExcludes.push(configuration.get('pnpUnpluggedFolder'))
-            }
-            if (configuration.get('deferredVersionFolder')) {
-              yarnExcludes.push(configuration.get('deferredVersionFolder'))
-            }
+            checkConfigurationToExclude('bstatePath')
+            checkConfigurationToExclude('installStatePath')
+            checkConfigurationToExclude('cacheFolder')
+            checkConfigurationToExclude('pnpUnpluggedFolder')
+            checkConfigurationToExclude('deferredVersionFolder')
             await copyFolder(
               rootDirectoryPath,
               outDirectoryPath,

@@ -1,0 +1,6 @@
+releases:
+  "@larry1123/yarn-plugin-production-install": prerelease
+
+declined:
+  - "@larry1123/yarn-contrib"
+  - "@larry1123/yarn-plugin-script-lifecycles"

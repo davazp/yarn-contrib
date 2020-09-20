@@ -1,7 +1,6 @@
-scripts
-node_modules
-bundles
-lib
-esm
+**/lib
+**/esm
+**/bundles/
+.idea
 .yarn/
 .pnp.js

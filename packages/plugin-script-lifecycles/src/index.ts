@@ -17,15 +17,20 @@
 // Types
 
 import type {
-  Readable, Writable 
+  Readable,
+  Writable 
 } from 'stream'
 
 import type {
   PortablePath 
 } from '@yarnpkg/fslib'
 import type {
-  Hooks, Locator, Plugin, Project 
+  Hooks,
+  Locator,
+  Plugin,
+  Project 
 } from '@yarnpkg/core'
+
 // Imports
 import {
   MessageName,
@@ -67,7 +72,8 @@ async function wrapScriptExecution(
   )
   const lifecycleScriptEnabled = !userScriptLifecycleExcludes.get(scriptName)
 
-  const shouldReport = extra.env['plugin_script_lifecycles_silent'] === undefined
+  const shouldReport =
+    extra.env['plugin_script_lifecycles_silent'] === undefined
 
   return async () => {
     const report = shouldReport

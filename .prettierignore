@@ -1,5 +1,6 @@
 **/lib
 **/esm
+**/bundles/
 .idea
 .yarn/
 .pnp.js

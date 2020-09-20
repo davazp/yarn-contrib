@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import fs from 'fs'
-
 import {
   Cache,
   Configuration,
@@ -33,7 +31,9 @@ import {
   WorkspaceResolver,
 } from '@yarnpkg/core'
 import {
-  npath, PortablePath, xfs, ZipFS 
+  PortablePath,
+  xfs,
+  ZipFS 
 } from '@yarnpkg/fslib'
 import {
   packUtils 
@@ -124,10 +124,7 @@ export class ProductionInstallFetcher implements Fetcher {
       if (cachePath && (await xfs.existsPromise(cachePath))) {
         if (outCachePath && !(await xfs.existsPromise(outCachePath))) {
           try {
-            fs.linkSync(
-              npath.fromPortablePath(cachePath),
-              npath.fromPortablePath(outCachePath),
-            )
+            await xfs.linkPromise(cachePath, outCachePath)
           }
           catch (e) {
             if (!(await xfs.existsPromise(outCachePath))) {

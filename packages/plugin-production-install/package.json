@@ -2,7 +2,11 @@
   "name": "@larry1123/yarn-plugin-production-install",
   "version": "1.0.0",
   "license": "Apache-2.0",
-  "main": "./src/index.ts",
+  "main": "src/index.ts",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
   "scripts": {
     "pre-build": "yarn run clean",
     "build": "yarn run build:plugin-production-install",

@@ -60,21 +60,21 @@ class ProdInstall extends clipanion_1.Command {
                 await util_1.copyFile(rootDirectoryPath, outDirectoryPath, configuration.get(`rcFilename`));
                 await util_1.copyFile(workspace.cwd, outDirectoryPath, fslib_1.toFilename('package.json'));
                 const yarnExcludes = [];
-                if (configuration.get('bstatePath')) {
-                    yarnExcludes.push(configuration.get('bstatePath'));
-                }
-                if (configuration.get('installStatePath')) {
-                    yarnExcludes.push(configuration.get('installStatePath'));
-                }
-                if (configuration.get('cacheFolder')) {
-                    yarnExcludes.push(configuration.get('cacheFolder'));
-                }
-                if (configuration.get('pnpUnpluggedFolder')) {
-                    yarnExcludes.push(configuration.get('pnpUnpluggedFolder'));
-                }
-                if (configuration.get('deferredVersionFolder')) {
-                    yarnExcludes.push(configuration.get('deferredVersionFolder'));
-                }
+                const checkConfigurationToExclude = (config) => {
+                    try {
+                        if (configuration.get(config)) {
+                            yarnExcludes.push(configuration.get(config));
+                        }
+                    }
+                    catch (_) {
+                        // noop
+                    }
+                };
+                checkConfigurationToExclude('bstatePath');
+                checkConfigurationToExclude('installStatePath');
+                checkConfigurationToExclude('cacheFolder');
+                checkConfigurationToExclude('pnpUnpluggedFolder');
+                checkConfigurationToExclude('deferredVersionFolder');
                 await util_1.copyFolder(rootDirectoryPath, outDirectoryPath, `.yarn`, yarnExcludes);
             });
             await report.startTimerPromise('Modifying to contain only production dependencies', async () => {

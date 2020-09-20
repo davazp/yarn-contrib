@@ -4,6 +4,7 @@ module.exports = {
     es2017: true,
     node: true,
   },
+  processor: 'disable/disable',
   parser: '@typescript-eslint/parser',
   parserOptions: {
     sourceType: 'module',
@@ -11,13 +12,16 @@ module.exports = {
       jsx: false,
       modules: true,
     },
-    project: [
-      './tsconfig.eslint.json',
-      './packages/*/tsconfig.json',
-    ],
+    project: ['./tsconfig.eslint.json', './packages/*/tsconfig.json'],
     tsconfigRootDir: __dirname,
   },
-  plugins: ['@typescript-eslint', 'import', 'eslint-comments'],
+  plugins: [
+    '@typescript-eslint',
+    'import',
+    'eslint-comments',
+    'disable',
+    'modules-newline',
+  ],
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/eslint-recommended',
@@ -31,12 +35,16 @@ module.exports = {
     '@typescript-eslint/require-await': 'off',
     '@typescript-eslint/promise-function-async': 'error',
     '@typescript-eslint/indent': ['error', 2],
-    // 'object-property-newline': ['error', { allowAllPropertiesOnSameLine: false }],
+    'object-property-newline': [
+      'error',
+      { allowAllPropertiesOnSameLine: false },
+    ],
     'object-curly-newline': [
       'error',
       {
         ObjectExpression: {
-          multiline: true, minProperties: 2 
+          multiline: true,
+          minProperties: 2,
         },
         ObjectPattern: 'always',
         ExportDeclaration: 'always',
@@ -52,10 +60,7 @@ module.exports = {
     //
 
     // require a eslint-enable comment for every eslint-disable comment
-    'eslint-comments/disable-enable-pair': [
-      'error',
-      {allowWholeFile: true},
-    ],
+    'eslint-comments/disable-enable-pair': ['error', { allowWholeFile: true }],
     // disallow a eslint-enable comment for multiple eslint-disable comments
     'eslint-comments/no-aggregating-enable': 'error',
     // disallow duplicate eslint-disable comments
@@ -110,5 +115,19 @@ module.exports = {
     'import/no-self-import': 'error',
     // Require modules with a single export to use a default export
     'import/prefer-default-export': 'off', // we want everything to be named
+
+    //
+    // eslint-plugin-modules-newline
+    //
+
+    'modules-newline/import-declaration-newline': 'error',
+    'modules-newline/export-declaration-newline': 'error',
   },
+  overrides: [
+    {
+      files: ['**/*.js'],
+      settings: { 'disable/plugins': ['@typescript-eslint'] },
+      parserOptions: { project: ['./tsconfig.eslint.json'] },
+    },
+  ],
 }

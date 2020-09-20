@@ -104,9 +104,7 @@ export class ProductionInstallResolver implements Resolver {
         version: workspace.manifest.version || `0.0.0`,
         languageName: `unknown`,
         linkType: LinkType.SOFT,
-        dependencies: new Map([
-          ...workspace.manifest.dependencies,
-        ]),
+        dependencies: new Map([...workspace.manifest.dependencies]),
         peerDependencies: new Map([...workspace.manifest.peerDependencies]),
         dependenciesMeta: workspace.manifest.dependenciesMeta,
         peerDependenciesMeta: workspace.manifest.peerDependenciesMeta,
