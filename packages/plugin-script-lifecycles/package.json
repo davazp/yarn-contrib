@@ -7,6 +7,10 @@
   "files": [
     "lib"
   ],
+  "publishConfig": {
+    "main": "./lib/index.js",
+    "types": "./lib/index.d.ts"
+  },
   "scripts": {
     "pre-build": "yarn run clean",
     "build": "yarn run build:plugin-script-lifecycles",
@@ -22,11 +26,11 @@
     "post-testExclude": "echo post"
   },
   "dependencies": {
-    "@yarnpkg/core": "^2.2.2"
+    "@yarnpkg/core": "^2.3.0"
   },
   "devDependencies": {
-    "@yarnpkg/fslib": "^2.2.1",
-    "typescript-transform-paths": "^1.1.14"
+    "@yarnpkg/fslib": "^2.2.2",
+    "typescript-transform-paths": "^2.0.1"
   },
   "peerDependencies": {
     "@yarnpkg/core": "*"

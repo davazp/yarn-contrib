@@ -44,17 +44,19 @@ class ProductionInstallFetcher {
         const expectedChecksum = opts.checksums.get(locator.locatorHash) || null;
         if (locator.reference.startsWith(core_1.WorkspaceResolver.protocol) &&
             locator.reference !== `${core_1.WorkspaceResolver.protocol}.`) {
-            const [packageFs, releaseFs, checksum,] = await opts.cache.fetchPackageFromCache(locator, expectedChecksum, {
+            const cache = await this.makeTemporaryCache(opts.cache);
+            const [packageFs, releaseFs, checksum,] = await cache.fetchPackageFromCache(locator, expectedChecksum, {
                 onHit: () => opts.report.reportCacheHit(locator),
                 onMiss: () => opts.report.reportCacheMiss(locator, `${core_1.structUtils.prettyLocator(opts.project.configuration, locator)} can't be found in the cache and will be packed from disk.`),
                 loader: async () => this.packWorkspace(locator, opts),
                 skipIntegrityCheck: opts.skipIntegrityCheck,
             });
+            cache.markedFiles.forEach((cachePath) => opts.cache.markedFiles.add(cachePath));
             return {
                 packageFs,
                 releaseFs,
                 prefixPath: core_1.structUtils.getIdentVendorPath(locator),
-                checksum,
+                checksum: expectedChecksum !== null && expectedChecksum !== void 0 ? expectedChecksum : checksum,
             };
         }
         else if (locator.reference.startsWith('npm:')) {
@@ -109,6 +111,16 @@ class ProductionInstallFetcher {
         return await core_1.tgzUtils.convertToZip(buffer, {
             stripComponents: 1,
             prefixPath: core_1.structUtils.getIdentVendorPath(locator),
+        });
+    }
+    async makeTemporaryCache(cache) {
+        const { configuration: { startingCwd, plugins }, check, immutable, cwd, } = cache;
+        const configuration = core_1.Configuration.create(startingCwd, plugins);
+        configuration.useWithSource(startingCwd, { enableMirror: false }, startingCwd, { overwrite: true });
+        return new core_1.Cache(cwd, {
+            configuration,
+            check,
+            immutable,
         });
     }
 }

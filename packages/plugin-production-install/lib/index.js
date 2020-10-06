@@ -24,6 +24,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@yarnpkg/core");
 const cli_1 = require("@yarnpkg/cli");
 const fslib_1 = require("@yarnpkg/fslib");
+const plugin_patch_1 = require("@yarnpkg/plugin-patch");
 const clipanion_1 = require("clipanion");
 const util_1 = require("./util");
 const ProductionInstallFetcher_1 = require("./ProductionInstallFetcher");
@@ -78,12 +79,17 @@ class ProdInstall extends clipanion_1.Command {
                 await util_1.copyFolder(rootDirectoryPath, outDirectoryPath, `.yarn`, yarnExcludes);
             });
             await report.startTimerPromise('Modifying to contain only production dependencies', async () => {
-                const packagePath = fslib_1.ppath.join(outDirectoryPath, fslib_1.toFilename('package.json'));
-                const pak = (await fslib_1.xfs.readJsonPromise(packagePath));
-                if (pak.devDependencies) {
-                    delete pak.devDependencies;
+                const workspacePackagePath = fslib_1.ppath.join(outDirectoryPath, fslib_1.toFilename('package.json'));
+                const rootPackagePath = fslib_1.ppath.join(rootDirectoryPath, fslib_1.toFilename('package.json'));
+                const workspacePackage = (await fslib_1.xfs.readJsonPromise(workspacePackagePath));
+                const rootPackage = (await fslib_1.xfs.readJsonPromise(rootPackagePath));
+                if (workspacePackage.devDependencies) {
+                    delete workspacePackage.devDependencies;
                 }
-                await fslib_1.xfs.writeJsonPromise(packagePath, pak);
+                if (rootPackage.resolutions) {
+                    workspacePackage.resolutions = rootPackage.resolutions;
+                }
+                await fslib_1.xfs.writeJsonPromise(workspacePackagePath, workspacePackage);
             });
             await report.startTimerPromise('Installing production version', async () => {
                 const outConfiguration = await core_1.Configuration.find(outDirectoryPath, this.context.plugins);
@@ -115,10 +121,54 @@ class ProdInstall extends clipanion_1.Command {
                     immutable: false,
                     fetcher,
                     resolver,
+                    persistProject: false,
+                });
+                await report.startTimerPromise('Cleaning up unused dependencies', async () => {
+                    const toRemove = this.cleanUpPatchSources(outProject, outCache);
+                    for (const locatorPath of toRemove) {
+                        report.reportInfo(core_1.MessageName.UNUSED_CACHE_ENTRY, `${fslib_1.ppath.basename(locatorPath)} appears to be unused - removing`);
+                        fslib_1.xfs.removeSync(locatorPath);
+                    }
                 });
             });
         });
         return report.exitCode();
+    }
+    cleanUpPatchSources(project, cache) {
+        const patchedPackages = [];
+        project.storedPackages.forEach((storedPackage) => {
+            if (storedPackage.reference.startsWith('patch:')) {
+                patchedPackages.push(storedPackage);
+            }
+        });
+        const sourcePackagesMap = new Map();
+        for (const patchedPackage of patchedPackages) {
+            const { sourceLocator } = plugin_patch_1.patchUtils.parseLocator(patchedPackage);
+            sourcePackagesMap.set(sourceLocator, patchedPackage);
+        }
+        const toRemove = [];
+        sourcePackagesMap.forEach((patchedPackage, locator) => {
+            var _a;
+            let used = false;
+            project.storedPackages.forEach((storedPackage) => {
+                if (storedPackage.locatorHash === patchedPackage.locatorHash) {
+                    return;
+                }
+                storedPackage.dependencies.forEach((dependencyDescriptor) => {
+                    const resolutionLocatorHash = project.storedResolutions.get(dependencyDescriptor.descriptorHash);
+                    if (resolutionLocatorHash === locator.locatorHash) {
+                        used = true;
+                    }
+                });
+            });
+            if (!used) {
+                const locatorPath = cache.getLocatorPath(locator, (_a = project.storedChecksums.get(locator.locatorHash)) !== null && _a !== void 0 ? _a : null);
+                if (locatorPath) {
+                    toRemove.push(locatorPath);
+                }
+            }
+        });
+        return toRemove;
     }
 }
 ProdInstall.usage = clipanion_1.Command.Usage({

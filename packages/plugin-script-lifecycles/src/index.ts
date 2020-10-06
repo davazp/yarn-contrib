@@ -178,6 +178,12 @@ async function wrapScriptExecution(
   }
 }
 
+declare module '@yarnpkg/core' {
+  interface ConfigurationValueMap {
+    userScriptLifecycleExcludes: Map<string, boolean>
+  }
+}
+
 const plugin: Plugin<PluginHooks> = {
   hooks: { wrapScriptExecution },
   configuration: {

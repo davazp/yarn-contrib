@@ -93,11 +93,12 @@ export class ProductionInstallFetcher implements Fetcher {
       locator.reference.startsWith(WorkspaceResolver.protocol) &&
       locator.reference !== `${WorkspaceResolver.protocol}.`
     ) {
+      const cache = await this.makeTemporaryCache(opts.cache)
       const [
         packageFs,
         releaseFs,
         checksum,
-      ] = await opts.cache.fetchPackageFromCache(locator, expectedChecksum, {
+      ] = await cache.fetchPackageFromCache(locator, expectedChecksum, {
         onHit: () => opts.report.reportCacheHit(locator),
         onMiss: () =>
           opts.report.reportCacheMiss(
@@ -110,12 +111,14 @@ export class ProductionInstallFetcher implements Fetcher {
         loader: async () => this.packWorkspace(locator, opts),
         skipIntegrityCheck: opts.skipIntegrityCheck,
       })
-
+      cache.markedFiles.forEach((cachePath) =>
+        opts.cache.markedFiles.add(cachePath),
+      )
       return {
         packageFs,
         releaseFs,
         prefixPath: structUtils.getIdentVendorPath(locator),
-        checksum,
+        checksum: expectedChecksum ?? checksum,
       }
     }
     else if (locator.reference.startsWith('npm:')) {
@@ -181,6 +184,29 @@ export class ProductionInstallFetcher implements Fetcher {
     return await tgzUtils.convertToZip(buffer, {
       stripComponents: 1,
       prefixPath: structUtils.getIdentVendorPath(locator),
+    })
+  }
+
+  async makeTemporaryCache(cache: Cache): Promise<Cache> {
+    const {
+      configuration: {
+        startingCwd, plugins 
+      },
+      check,
+      immutable,
+      cwd,
+    } = cache
+    const configuration = Configuration.create(startingCwd, plugins)
+    configuration.useWithSource(
+      startingCwd,
+      { enableMirror: false },
+      startingCwd,
+      { overwrite: true },
+    )
+    return new Cache(cwd, {
+      configuration,
+      check,
+      immutable,
     })
   }
 }

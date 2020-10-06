@@ -21,6 +21,9 @@ import {
   Project,
   StreamReport,
   CommandContext,
+  Package,
+  Locator,
+  MessageName,
 } from '@yarnpkg/core'
 import {
   WorkspaceRequiredError 
@@ -31,6 +34,9 @@ import {
   toFilename,
   xfs 
 } from '@yarnpkg/fslib'
+import {
+  patchUtils
+} from '@yarnpkg/plugin-patch'
 import {
   Command,
   Usage 
@@ -148,17 +154,32 @@ class ProdInstall extends Command<CommandContext> {
         await report.startTimerPromise(
           'Modifying to contain only production dependencies',
           async () => {
-            const packagePath = ppath.join(
+            const workspacePackagePath = ppath.join(
               outDirectoryPath,
               toFilename('package.json'),
             )
-            const pak = (await xfs.readJsonPromise(packagePath)) as {
+            const rootPackagePath = ppath.join(
+              rootDirectoryPath,
+              toFilename('package.json'),
+            )
+            const workspacePackage = (await xfs.readJsonPromise(
+              workspacePackagePath,
+            )) as {
               devDependencies: unknown
+              resolutions: unknown
             }
-            if (pak.devDependencies) {
-              delete pak.devDependencies
+            const rootPackage = (await xfs.readJsonPromise(
+              rootPackagePath,
+            )) as {
+              resolutions: unknown
             }
-            await xfs.writeJsonPromise(packagePath, pak)
+            if (workspacePackage.devDependencies) {
+              delete workspacePackage.devDependencies
+            }
+            if (rootPackage.resolutions) {
+              workspacePackage.resolutions = rootPackage.resolutions
+            }
+            await xfs.writeJsonPromise(workspacePackagePath, workspacePackage)
           },
         )
 
@@ -204,13 +225,75 @@ class ProdInstall extends Command<CommandContext> {
               immutable: false,
               fetcher,
               resolver,
+              persistProject: false,
             })
+
+            await report.startTimerPromise(
+              'Cleaning up unused dependencies',
+              async () => {
+                const toRemove = this.cleanUpPatchSources(outProject, outCache)
+                for (const locatorPath of toRemove) {
+                  report.reportInfo(
+                    MessageName.UNUSED_CACHE_ENTRY,
+                    `${ppath.basename(
+                      locatorPath,
+                    )} appears to be unused - removing`,
+                  )
+                  xfs.removeSync(locatorPath)
+                }
+              },
+            )
           },
         )
       },
     )
-
     return report.exitCode()
+  }
+
+  private cleanUpPatchSources(
+    project: Project,
+    cache: Cache,
+  ): Array<PortablePath> {
+    const patchedPackages: Array<Package> = []
+    project.storedPackages.forEach((storedPackage) => {
+      if (storedPackage.reference.startsWith('patch:')) {
+        patchedPackages.push(storedPackage)
+      }
+    })
+    const sourcePackagesMap: Map<Locator, Package> = new Map<Locator, Package>()
+    for (const patchedPackage of patchedPackages) {
+      const {
+        sourceLocator 
+      } = patchUtils.parseLocator(patchedPackage)
+      sourcePackagesMap.set(sourceLocator, patchedPackage)
+    }
+    const toRemove: Array<PortablePath> = []
+    sourcePackagesMap.forEach((patchedPackage, locator) => {
+      let used = false
+      project.storedPackages.forEach((storedPackage) => {
+        if (storedPackage.locatorHash === patchedPackage.locatorHash) {
+          return
+        }
+        storedPackage.dependencies.forEach((dependencyDescriptor) => {
+          const resolutionLocatorHash = project.storedResolutions.get(
+            dependencyDescriptor.descriptorHash,
+          )
+          if (resolutionLocatorHash === locator.locatorHash) {
+            used = true
+          }
+        })
+      })
+      if (!used) {
+        const locatorPath = cache.getLocatorPath(
+          locator,
+          project.storedChecksums.get(locator.locatorHash) ?? null,
+        )
+        if (locatorPath) {
+          toRemove.push(locatorPath)
+        }
+      }
+    })
+    return toRemove
   }
 }
 
