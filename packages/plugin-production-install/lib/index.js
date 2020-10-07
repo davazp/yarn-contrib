@@ -121,7 +121,6 @@ class ProdInstall extends clipanion_1.Command {
                     immutable: false,
                     fetcher,
                     resolver,
-                    persistProject: false,
                 });
                 await report.startTimerPromise('Cleaning up unused dependencies', async () => {
                     const toRemove = this.cleanUpPatchSources(outProject, outCache);

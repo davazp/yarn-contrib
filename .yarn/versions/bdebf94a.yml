@@ -1,0 +1,5 @@
+releases:
+  "@larry1123/yarn-plugin-production-install": patch
+
+declined:
+  - "@larry1123/yarn-contrib"

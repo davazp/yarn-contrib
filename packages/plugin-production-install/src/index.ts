@@ -225,7 +225,6 @@ class ProdInstall extends Command<CommandContext> {
               immutable: false,
               fetcher,
               resolver,
-              persistProject: false,
             })
 
             await report.startTimerPromise(
