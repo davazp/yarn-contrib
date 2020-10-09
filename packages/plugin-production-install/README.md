@@ -5,8 +5,9 @@ This plugin will create a minimal yarn install for a workspace.
 Usage: `yarn prod-install outDir`
 
 * The resulting installation will include only `dependencies` required for production.
-It excludes `devDependencies`. 
-* The yarn cache will be copied and trimmed accordingly.
+It excludes `devDependencies`.
+* Any workspace dependencies will be stored as zip files in the resulting cache, same as if `yarn pack` was executed on them.
+* The yarn cache will be copied and trimmed of extraneous packages accordingly.
 * `package.json`, yarn settings and plugins are included.
 
 ## Install instructions
@@ -37,20 +38,25 @@ ADD . .
 RUN yarn install
 
 ##
-## Optionally compile (tsc, babel, etc) your source files to /packages/backend-api/dist
+## Change working directory to the workspace we want to build
 ##
-RUN yarn workspace backend-api build 
+WORKDIR packages/backend-api
+
+##
+## Optionally run a `build` script to compile (tsc, babel, etc) the source files to /packages/backend-api/dist
+##
+RUN yarn build 
 
 ##
 ## This is our secret weapon
 ## Our nice plugin creates a yarn install just for us
 ##
-RUN cd packages/backend-api && yarn prod-install /usr/src/build
+RUN yarn prod-install /usr/src/build
 
 ##
 ## Copy /dist directory to built image
 ##
-RUN cp -r packages/backend-api/dist /usr/src/build
+RUN cp -r dist /usr/src/build
 
 ##
 ## This is our actual built image
