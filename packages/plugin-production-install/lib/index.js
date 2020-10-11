@@ -16,6 +16,7 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
+// imports
 const core_1 = require("@yarnpkg/core");
 const MultiResolver_1 = require("@yarnpkg/core/lib/MultiResolver");
 const LockfileResolver_1 = require("@yarnpkg/core/lib/LockfileResolver");

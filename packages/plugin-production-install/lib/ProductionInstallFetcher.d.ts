@@ -1,4 +1,5 @@
-import { Cache, Fetcher, FetchOptions, FetchResult, Locator, MinimalFetchOptions, Project } from '@yarnpkg/core';
+import type { Fetcher, FetchOptions, FetchResult, Locator, MinimalFetchOptions, Project } from '@yarnpkg/core';
+import { Cache } from '@yarnpkg/core';
 import { PortablePath, ZipFS } from '@yarnpkg/fslib';
 export declare class ProductionInstallFetcher implements Fetcher {
     protected readonly fetcher: Fetcher;

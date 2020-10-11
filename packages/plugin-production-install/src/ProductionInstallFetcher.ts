@@ -14,18 +14,25 @@
  * limitations under the License.
  */
 
-import {
-  Cache,
-  Configuration,
+// types
+
+import type {
   Fetcher,
   FetchOptions,
   FetchResult,
-  formatUtils,
   Locator,
-  MessageName,
   MinimalFetchOptions,
-  miscUtils,
   Project,
+} from '@yarnpkg/core'
+
+// imports
+
+import {
+  Cache,
+  Configuration,
+  formatUtils,
+  MessageName,
+  miscUtils,
   ReportError,
   StreamReport,
   structUtils,

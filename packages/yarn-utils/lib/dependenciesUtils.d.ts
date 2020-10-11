@@ -1,4 +1,4 @@
-import { Package, Project } from '@yarnpkg/core';
+import type { Package, Project } from '@yarnpkg/core';
 /**
  * Get all packages that depend on a given package
  *

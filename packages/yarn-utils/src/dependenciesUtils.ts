@@ -1,4 +1,6 @@
-import {
+// types
+
+import type {
   Package,
   Project 
 } from '@yarnpkg/core'

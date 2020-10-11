@@ -16,6 +16,7 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProductionInstallResolver = void 0;
+// imports
 const core_1 = require("@yarnpkg/core");
 class ProductionInstallResolver {
     constructor({ resolver, project, stripTypes = true, }) {

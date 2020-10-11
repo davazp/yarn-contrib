@@ -14,18 +14,31 @@
  * limitations under the License.
  */
 
-import {
-  Cache,
-  Configuration,
+// types
+
+import type {
   Plugin,
-  Project,
-  StreamReport,
   CommandContext,
   Package,
-  MessageName,
   ConfigurationValueMap,
   ResolveOptions,
   Resolver,
+} from '@yarnpkg/core'
+import type {
+  PortablePath 
+} from '@yarnpkg/fslib'
+import type {
+  Usage 
+} from 'clipanion'
+
+// imports
+
+import {
+  Cache,
+  Configuration,
+  Project,
+  StreamReport,
+  MessageName,
 } from '@yarnpkg/core'
 import {
   MultiResolver 
@@ -37,7 +50,6 @@ import {
   WorkspaceRequiredError 
 } from '@yarnpkg/cli'
 import {
-  PortablePath,
   ppath,
   toFilename,
   xfs 
@@ -49,8 +61,7 @@ import {
   packUtils 
 } from '@yarnpkg/plugin-pack'
 import {
-  Command,
-  Usage 
+  Command 
 } from 'clipanion'
 
 import {

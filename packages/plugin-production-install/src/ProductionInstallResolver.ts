@@ -14,18 +14,25 @@
  * limitations under the License.
  */
 
-import {
+// types
+
+import type {
   Descriptor,
   DescriptorHash,
-  LinkType,
   Locator,
   MinimalResolveOptions,
   Package,
-  Project,
   ResolveOptions,
   Resolver,
-  WorkspaceResolver,
   IdentHash,
+  Project,
+} from '@yarnpkg/core'
+
+// imports
+
+import {
+  LinkType,
+  WorkspaceResolver 
 } from '@yarnpkg/core'
 
 export class ProductionInstallResolver implements Resolver {

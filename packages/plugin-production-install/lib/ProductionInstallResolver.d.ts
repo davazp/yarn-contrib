@@ -1,4 +1,4 @@
-import { Descriptor, DescriptorHash, Locator, MinimalResolveOptions, Package, Project, ResolveOptions, Resolver } from '@yarnpkg/core';
+import type { Descriptor, DescriptorHash, Locator, MinimalResolveOptions, Package, ResolveOptions, Resolver, Project } from '@yarnpkg/core';
 export declare class ProductionInstallResolver implements Resolver {
     protected readonly resolver: Resolver;
     protected readonly project: Project;

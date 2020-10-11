@@ -14,8 +14,15 @@
  * limitations under the License.
  */
 
+// types
+
 import {
-  PortablePath,
+  PortablePath 
+} from '@yarnpkg/fslib'
+
+// imports
+
+import {
   ppath,
   xfs 
 } from '@yarnpkg/fslib'
