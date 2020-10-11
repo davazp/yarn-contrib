@@ -1,0 +1,3 @@
+declined:
+  - "@larry1123/yarn-contrib"
+  - "@larry1123/yarn-plugin-production-install"

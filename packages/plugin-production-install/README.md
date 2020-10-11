@@ -2,11 +2,13 @@
 
 This plugin will create a minimal yarn install for a workspace.
 
-## Usage: 
+## Usage:
+
 - `yarn prod-install outDir`
 - `yarn prod-install --pack outDir`
 
 ## Features
+
 - The resulting installation will include only `dependencies` required for production.
   It excludes `devDependencies`.
 - Any `workspace:` dependencies will be stored as zip files in the resulting cache, same as if `yarn pack` was executed on them.
@@ -128,24 +130,9 @@ COPY .yarnrc.yml /opt/demo/.yarnrc.yml
 ##
 
 ##
-## Install build depanciyes
-##
-FROM install-prep as install-dev
-ARG BUILD_DIR=packages/demo
-
-WORKDIR /opt/demo
-
-##
-## This is needed as the install state will be invalid otherwise
-##
-RUN yarn install
-
-WORKDIR /opt/demo/${BUILD_DIR}
-
-##
 ## Install prod depanciyes
 ##
-FROM install-prep as install-prod
+FROM install-prep as install
 ARG BUILD_DIR=packages/demo
 
 WORKDIR /opt/demo
@@ -154,22 +141,6 @@ WORKDIR /opt/demo
 ## This is needed as the install state will be invalid otherwise
 ##
 RUN yarn install
-
-WORKDIR /opt/demo/${BUILD_DIR}
-
-##
-## This is our secret weapon
-## Our nice plugin creates a yarn install just for us
-##
-RUN yarn prod-install /opt/demo/prod
-
-WORKDIR /opt/demo/prod
-
-##
-## Base
-##
-FROM install-dev as build
-ARG BUILD_DIR=packages/demo
 
 WORKDIR /opt/demo/${BUILD_DIR}
 
@@ -180,7 +151,14 @@ WORKDIR /opt/demo/${BUILD_DIR}
 ##
 COPY ${BUILD_DIR}/. .
 
-RUN yarn run build
+##
+## This is our secret weapon
+## Our nice plugin creates a yarn install just for us
+## Your workspace should have a `prepack` script if you need to make sure that everything is built before
+##
+RUN yarn prod-install --pack /opt/demo/prod
+
+WORKDIR /opt/demo/prod
 
 ##
 ## Final Image
@@ -212,13 +190,13 @@ RUN --mount=type=cache,sharing=locked,target=/var/cache/apt \
 ## This includes our yarn install (like grabbing node_modules of old)
 ## Then includes the built code
 ##
-COPY --chown=node:node --from=install-prod /opt/demo/prod/ /opt/demo/
-COPY --chown=node:node --from=build /opt/demo/${BUILD_DIR}/dist/ /opt/demo/
+COPY --chown=node:node --from=install /opt/demo/prod/ /opt/demo/
 
 ##
 ## How you start and build your app is up to you this is just an example
 ##
 
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
-CMD ["gosu", "node", "yarn", "node", "index.js"]
+## This assums you have something like // file:package.json {"publishConfig": {"main": "lib/index.js"}}
+CMD ["gosu", "node", "yarn", "start"]
 ```

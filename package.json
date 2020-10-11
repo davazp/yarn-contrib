@@ -58,20 +58,12 @@
     "sort-package-json": "patch:sort-package-json@^1.46.0#./.yarn/patches/sort-package-json.patch",
     "typescript-transform-paths": "2.0.1"
   },
-  "dependencies": {
-    "@yarnpkg/cli": "^2.3.1",
-    "@yarnpkg/core": "^2.3.0",
-    "micromatch": "^4.0.2",
-    "ts-node": "^9.0.0",
-    "tslib": "^2.0.2",
-    "ttypescript": "^1.5.12",
-    "typescript": "^4.0.3",
-    "typescript-transform-paths": "^2.0.1"
-  },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.4.0",
     "@typescript-eslint/parser": "^4.4.0",
     "@yarnpkg/builder": "^2.1.2",
+    "@yarnpkg/cli": "^2.3.1",
+    "@yarnpkg/core": "^2.3.0",
     "eslint": "^7.10.0",
     "eslint-config-prettier": "^6.12.0",
     "eslint-plugin-disable": "^2.0.1",
@@ -80,8 +72,14 @@
     "eslint-plugin-modules-newline": "^0.0.4",
     "husky": "^4.3.0",
     "lint-staged": "^10.4.0",
+    "micromatch": "^4.0.2",
     "prettier": "^2.1.2",
-    "sort-package-json": "^1.46.0"
+    "sort-package-json": "^1.46.0",
+    "ts-node": "^9.0.0",
+    "tslib": "^2.0.2",
+    "ttypescript": "^1.5.12",
+    "typescript": "^4.0.3",
+    "typescript-transform-paths": "^2.0.1"
   },
   "engines": {
     "node": ">=12.0.0"
