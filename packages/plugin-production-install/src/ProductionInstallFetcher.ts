@@ -20,18 +20,22 @@ import {
   Fetcher,
   FetchOptions,
   FetchResult,
+  formatUtils,
   Locator,
   MessageName,
   MinimalFetchOptions,
   miscUtils,
   Project,
+  ReportError,
+  StreamReport,
   structUtils,
   tgzUtils,
-  Workspace,
   WorkspaceResolver,
 } from '@yarnpkg/core'
 import {
   PortablePath,
+  ppath,
+  toFilename,
   xfs,
   ZipFS 
 } from '@yarnpkg/fslib'
@@ -40,38 +44,26 @@ import {
 } from '@yarnpkg/plugin-pack'
 
 export class ProductionInstallFetcher implements Fetcher {
-  protected readonly multiFetcher: Fetcher
+  protected readonly fetcher: Fetcher
   protected readonly project: Project
-  protected readonly workspace: Workspace
   protected readonly cache: Cache
-  protected readonly outConfiguration: Configuration
-  protected readonly outDirectoryPath: PortablePath
 
   constructor({
-    multiFetcher,
+    fetcher,
     project,
-    workspace,
     cache,
-    outDirectoryPath,
-    outConfiguration,
   }: {
-    multiFetcher: Fetcher
+    fetcher: Fetcher
     project: Project
-    workspace: Workspace
     cache: Cache
-    outDirectoryPath: PortablePath
-    outConfiguration: Configuration
   }) {
-    this.multiFetcher = multiFetcher
+    this.fetcher = fetcher
     this.project = project
-    this.workspace = workspace
     this.cache = cache
-    this.outDirectoryPath = outDirectoryPath
-    this.outConfiguration = outConfiguration
   }
 
   supports(locator: Locator, opts: MinimalFetchOptions): boolean {
-    return this.multiFetcher.supports(locator, opts)
+    return this.fetcher.supports(locator, opts)
   }
 
   getLocalPath(locator: Locator, opts: FetchOptions): PortablePath | null {
@@ -82,7 +74,7 @@ export class ProductionInstallFetcher implements Fetcher {
       return null
     }
     else {
-      return this.multiFetcher.getLocalPath(locator, opts)
+      return this.fetcher.getLocalPath(locator, opts)
     }
   }
 
@@ -137,7 +129,7 @@ export class ProductionInstallFetcher implements Fetcher {
         }
       }
     }
-    return this.multiFetcher.fetch(locator, opts)
+    return this.fetcher.fetch(locator, opts)
   }
 
   async packWorkspace(
@@ -146,44 +138,87 @@ export class ProductionInstallFetcher implements Fetcher {
       report 
     }: FetchOptions,
   ): Promise<ZipFS> {
+    const {
+      configuration 
+    } = this.project
+
     const workspace = this.project.getWorkspaceByLocator(locator)
-    if (await packUtils.hasPackScripts(workspace)) {
+
+    return xfs.mktempPromise(async (logDir) => {
+      const workspacePretty = structUtils.slugifyLocator(locator)
+      const logFile = ppath.join(
+        logDir,
+        toFilename(`${workspacePretty}-pack.log`),
+      )
+
+      const header = `# This file contains the result of Yarn calling packing "${workspacePretty}" ("${workspace.cwd}")\n`
+
+      const {
+        stdout, stderr 
+      } = configuration.getSubprocessStreams(logFile, {
+        report,
+        prefix: structUtils.prettyLocator(
+          configuration,
+          workspace.anchoredLocator,
+        ),
+        header,
+      })
+
+      const packReport = await StreamReport.start(
+        {
+          configuration,
+          stdout,
+        },
+        async () => {
+          /** noop **/
+        },
+      )
       try {
-        const cache = await Cache.find(workspace.project.configuration, {
-          immutable: true,
-          check: false,
-        })
-        await workspace.project.install({
-          report,
-          cache,
+        let buffer!: Buffer
+        await packUtils.prepareForPack(
+          workspace,
+          { report: packReport },
+          async () => {
+            packReport.reportJson({ base: workspace.cwd })
+
+            const files = await packUtils.genPackList(workspace)
+
+            for (const file of files) {
+              packReport.reportInfo(null, file)
+              packReport.reportJson({ location: file })
+            }
+
+            const pack = await packUtils.genPackStream(workspace, files)
+            buffer = await miscUtils.bufferStream(pack)
+          },
+        )
+
+        return await tgzUtils.convertToZip(buffer, {
+          stripComponents: 1,
+          prefixPath: structUtils.getIdentVendorPath(locator),
         })
       }
-      catch (_) {
-        await workspace.project.resolveEverything({
-          lockfileOnly: true,
-          report,
-        })
+      catch (e) {
+        xfs.detachTemp(logDir)
+        packReport.reportExceptionOnce(e)
+        throw new ReportError(
+          MessageName.LIFECYCLE_SCRIPT,
+          `Packing ${workspacePretty} failed, logs can be found here: ${formatUtils.pretty(
+            configuration,
+            (logFile as unknown) as null,
+            formatUtils.Type.PATH,
+          )}); run ${formatUtils.pretty(
+            configuration,
+            `yarn ${ppath.relative(this.project.cwd, workspace.cwd)} pack`,
+            formatUtils.Type.CODE,
+          )} to investigate`,
+        )
       }
-    }
-
-    let buffer!: Buffer
-    await packUtils.prepareForPack(workspace, { report }, async () => {
-      report.reportJson({ base: workspace.cwd })
-
-      const files = await packUtils.genPackList(workspace)
-
-      for (const file of files) {
-        report.reportInfo(null, file)
-        report.reportJson({ location: file })
+      finally {
+        await packReport.finalize()
+        stdout.end()
+        stderr.end()
       }
-
-      const pack = await packUtils.genPackStream(workspace, files)
-      buffer = await miscUtils.bufferStream(pack)
-    })
-
-    return await tgzUtils.convertToZip(buffer, {
-      stripComponents: 1,
-      prefixPath: structUtils.getIdentVendorPath(locator),
     })
   }
 

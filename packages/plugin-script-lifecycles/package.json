@@ -3,18 +3,14 @@
   "version": "1.0.0",
   "license": "Apache-2.0",
   "main": "src/index.ts",
-  "types": "lib/index.d.ts",
   "files": [
+    "bundles",
     "lib"
   ],
-  "publishConfig": {
-    "main": "./lib/index.js",
-    "types": "./lib/index.d.ts"
-  },
   "scripts": {
     "pre-build": "yarn run clean",
     "build": "yarn run build:plugin-script-lifecycles",
-    "build:plugin-script-lifecycles": "yarn run build:cjs && yarn run build:plugin",
+    "build:plugin-script-lifecycles": "yarn run build:cjs --declaration && yarn run build:plugin",
     "clean": "yarn run clean:plugin-script-lifecycles",
     "clean:plugin-script-lifecycles": "rm -rf lib bundles",
     "format": "yarn run format:package.json && yarn run format:prettier && yarn run lint:eslint --fix",
@@ -26,7 +22,8 @@
     "post-testExclude": "echo post"
   },
   "dependencies": {
-    "@yarnpkg/core": "^2.3.0"
+    "@yarnpkg/core": "^2.3.0",
+    "tslib": "^2.0.2"
   },
   "devDependencies": {
     "@yarnpkg/fslib": "^2.2.2",
@@ -38,5 +35,9 @@
   "optionalDependencies": {
     "@types/node": "^12.0.0"
   },
-  "pluginEnabled": false
+  "publishConfig": {
+    "main": "lib/index.js",
+    "types": "lib/index.d.ts"
+  },
+  "pluginEnabled": true
 }

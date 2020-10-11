@@ -6,4 +6,7 @@
 /.yarn/releases/*.js binary linguist-vendored
 
 /packages/*/lib/**/*.js linguist-generated
-/packages/*/lib/**/*.d.ts.map text -diff linguist-generated
+/packages/*/lib/**/*.d.ts text -diff linguist-generated
+/packages/*/esm/**/*.js linguist-generated
+/packages/*/esm/**/*.d.ts text -diff linguist-generated
+/packages/*/bundles/**/*.js binary linguist-generated

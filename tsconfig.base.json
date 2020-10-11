@@ -7,13 +7,15 @@
     "noImplicitReturns": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "noImplicitThis": true,
+    "noStrictGenericChecks": true,
+    "forceConsistentCasingInFileNames": true,
+    "importHelpers": true,
     "pretty": true,
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
     "strictFunctionTypes": true,
-    "noImplicitThis": true,
-    "noStrictGenericChecks": true,
     "skipLibCheck": true,
     "allowJs": false,
     "experimentalDecorators": true,
@@ -21,7 +23,8 @@
     "isolatedModules": true,
     "moduleResolution": "node",
     "target": "es2018",
-    "lib": ["es2018"],
+    "jsx": "react",
+    "lib": ["esnext", "esnext.asynciterable"],
     "types": ["node"]
   }
 }

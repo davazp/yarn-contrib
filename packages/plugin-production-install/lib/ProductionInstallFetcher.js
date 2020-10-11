@@ -20,16 +20,13 @@ const core_1 = require("@yarnpkg/core");
 const fslib_1 = require("@yarnpkg/fslib");
 const plugin_pack_1 = require("@yarnpkg/plugin-pack");
 class ProductionInstallFetcher {
-    constructor({ multiFetcher, project, workspace, cache, outDirectoryPath, outConfiguration, }) {
-        this.multiFetcher = multiFetcher;
+    constructor({ fetcher, project, cache, }) {
+        this.fetcher = fetcher;
         this.project = project;
-        this.workspace = workspace;
         this.cache = cache;
-        this.outDirectoryPath = outDirectoryPath;
-        this.outConfiguration = outConfiguration;
     }
     supports(locator, opts) {
-        return this.multiFetcher.supports(locator, opts);
+        return this.fetcher.supports(locator, opts);
     }
     getLocalPath(locator, opts) {
         if (locator.reference.startsWith(core_1.WorkspaceResolver.protocol) &&
@@ -37,7 +34,7 @@ class ProductionInstallFetcher {
             return null;
         }
         else {
-            return this.multiFetcher.getLocalPath(locator, opts);
+            return this.fetcher.getLocalPath(locator, opts);
         }
     }
     async fetch(locator, opts) {
@@ -75,42 +72,53 @@ class ProductionInstallFetcher {
                 }
             }
         }
-        return this.multiFetcher.fetch(locator, opts);
+        return this.fetcher.fetch(locator, opts);
     }
     async packWorkspace(locator, { report }) {
+        const { configuration } = this.project;
         const workspace = this.project.getWorkspaceByLocator(locator);
-        if (await plugin_pack_1.packUtils.hasPackScripts(workspace)) {
+        return fslib_1.xfs.mktempPromise(async (logDir) => {
+            const workspacePretty = core_1.structUtils.slugifyLocator(locator);
+            const logFile = fslib_1.ppath.join(logDir, fslib_1.toFilename(`${workspacePretty}-pack.log`));
+            const header = `# This file contains the result of Yarn calling packing "${workspacePretty}" ("${workspace.cwd}")\n`;
+            const { stdout, stderr } = configuration.getSubprocessStreams(logFile, {
+                report,
+                prefix: core_1.structUtils.prettyLocator(configuration, workspace.anchoredLocator),
+                header,
+            });
+            const packReport = await core_1.StreamReport.start({
+                configuration,
+                stdout,
+            }, async () => {
+                /** noop **/
+            });
             try {
-                const cache = await core_1.Cache.find(workspace.project.configuration, {
-                    immutable: true,
-                    check: false,
+                let buffer;
+                await plugin_pack_1.packUtils.prepareForPack(workspace, { report: packReport }, async () => {
+                    packReport.reportJson({ base: workspace.cwd });
+                    const files = await plugin_pack_1.packUtils.genPackList(workspace);
+                    for (const file of files) {
+                        packReport.reportInfo(null, file);
+                        packReport.reportJson({ location: file });
+                    }
+                    const pack = await plugin_pack_1.packUtils.genPackStream(workspace, files);
+                    buffer = await core_1.miscUtils.bufferStream(pack);
                 });
-                await workspace.project.install({
-                    report,
-                    cache,
+                return await core_1.tgzUtils.convertToZip(buffer, {
+                    stripComponents: 1,
+                    prefixPath: core_1.structUtils.getIdentVendorPath(locator),
                 });
             }
-            catch (_) {
-                await workspace.project.resolveEverything({
-                    lockfileOnly: true,
-                    report,
-                });
+            catch (e) {
+                fslib_1.xfs.detachTemp(logDir);
+                packReport.reportExceptionOnce(e);
+                throw new core_1.ReportError(core_1.MessageName.LIFECYCLE_SCRIPT, `Packing ${workspacePretty} failed, logs can be found here: ${core_1.formatUtils.pretty(configuration, logFile, core_1.formatUtils.Type.PATH)}); run ${core_1.formatUtils.pretty(configuration, `yarn ${fslib_1.ppath.relative(this.project.cwd, workspace.cwd)} pack`, core_1.formatUtils.Type.CODE)} to investigate`);
             }
-        }
-        let buffer;
-        await plugin_pack_1.packUtils.prepareForPack(workspace, { report }, async () => {
-            report.reportJson({ base: workspace.cwd });
-            const files = await plugin_pack_1.packUtils.genPackList(workspace);
-            for (const file of files) {
-                report.reportInfo(null, file);
-                report.reportJson({ location: file });
+            finally {
+                await packReport.finalize();
+                stdout.end();
+                stderr.end();
             }
-            const pack = await plugin_pack_1.packUtils.genPackStream(workspace, files);
-            buffer = await core_1.miscUtils.bufferStream(pack);
-        });
-        return await core_1.tgzUtils.convertToZip(buffer, {
-            stripComponents: 1,
-            prefixPath: core_1.structUtils.getIdentVendorPath(locator),
         });
     }
     async makeTemporaryCache(cache) {

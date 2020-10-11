@@ -22,9 +22,17 @@ import {
   StreamReport,
   CommandContext,
   Package,
-  Locator,
   MessageName,
+  ConfigurationValueMap,
+  ResolveOptions,
+  Resolver,
 } from '@yarnpkg/core'
+import {
+  MultiResolver 
+} from '@yarnpkg/core/lib/MultiResolver'
+import {
+  LockfileResolver 
+} from '@yarnpkg/core/lib/LockfileResolver'
 import {
   WorkspaceRequiredError 
 } from '@yarnpkg/cli'
@@ -35,12 +43,19 @@ import {
   xfs 
 } from '@yarnpkg/fslib'
 import {
-  patchUtils
+  patchUtils 
 } from '@yarnpkg/plugin-patch'
+import {
+  packUtils 
+} from '@yarnpkg/plugin-pack'
 import {
   Command,
   Usage 
 } from 'clipanion'
+
+import {
+  dependenciesUtils 
+} from '@larry1123/yarn-utils'
 
 import {
   copyFile,
@@ -53,12 +68,24 @@ import {
   ProductionInstallResolver 
 } from './ProductionInstallResolver'
 
+type KeysMatching<T, V> = {
+  [K in keyof T]-?: T[K] extends V ? K : never
+}[keyof T]
+
+const ManifestFile = toFilename('package.json')
+
 class ProdInstall extends Command<CommandContext> {
   @Command.String()
   outDirectory!: string
 
   @Command.Boolean(`--json`)
   json = false
+
+  @Command.Boolean(`--strip-types`)
+  stripTypes = true
+
+  @Command.Boolean(`--pack`)
+  pack = false
 
   @Command.Boolean(`--silent`, { hidden: true })
   silent?: boolean = false
@@ -84,6 +111,8 @@ class ProdInstall extends Command<CommandContext> {
       this.context.cwd,
     )
 
+    await project.restoreInstallState()
+
     if (!workspace) {
       throw new WorkspaceRequiredError(project.cwd, this.context.cwd)
     }
@@ -104,7 +133,6 @@ class ProdInstall extends Command<CommandContext> {
         configuration,
         json: this.json,
         stdout: this.context.stdout,
-        includeLogs: true,
       },
       async (report: StreamReport) => {
         await report.startTimerPromise(
@@ -121,13 +149,13 @@ class ProdInstall extends Command<CommandContext> {
               outDirectoryPath,
               configuration.get(`rcFilename`),
             )
-            await copyFile(
-              workspace.cwd,
-              outDirectoryPath,
-              toFilename('package.json'),
-            )
+            await copyFile(workspace.cwd, outDirectoryPath, ManifestFile)
             const yarnExcludes: Array<PortablePath> = []
-            const checkConfigurationToExclude = (config: string) => {
+            const checkConfigurationToExclude = <
+              K extends KeysMatching<ConfigurationValueMap, PortablePath>
+            >(
+              config: K,
+            ): void => {
               try {
                 if (configuration.get(config)) {
                   yarnExcludes.push(configuration.get(config))
@@ -152,44 +180,27 @@ class ProdInstall extends Command<CommandContext> {
         )
 
         await report.startTimerPromise(
-          'Modifying to contain only production dependencies',
-          async () => {
-            const workspacePackagePath = ppath.join(
-              outDirectoryPath,
-              toFilename('package.json'),
-            )
-            const rootPackagePath = ppath.join(
-              rootDirectoryPath,
-              toFilename('package.json'),
-            )
-            const workspacePackage = (await xfs.readJsonPromise(
-              workspacePackagePath,
-            )) as {
-              devDependencies: unknown
-              resolutions: unknown
-            }
-            const rootPackage = (await xfs.readJsonPromise(
-              rootPackagePath,
-            )) as {
-              resolutions: unknown
-            }
-            if (workspacePackage.devDependencies) {
-              delete workspacePackage.devDependencies
-            }
-            if (rootPackage.resolutions) {
-              workspacePackage.resolutions = rootPackage.resolutions
-            }
-            await xfs.writeJsonPromise(workspacePackagePath, workspacePackage)
-          },
-        )
-
-        await report.startTimerPromise(
           'Installing production version',
           async () => {
             const outConfiguration = await Configuration.find(
               outDirectoryPath,
               this.context.plugins,
             )
+
+            if (this.stripTypes) {
+              for (const [
+                identHash,
+                extensionsPerIdent,
+              ] of outConfiguration.packageExtensions.entries()) {
+                outConfiguration.packageExtensions.set(
+                  identHash,
+                  extensionsPerIdent.filter(
+                    (extension) => extension?.descriptor?.scope !== 'types',
+                  ),
+                )
+              }
+            }
+
             const {
               project: outProject,
               workspace: outWorkspace,
@@ -197,26 +208,43 @@ class ProdInstall extends Command<CommandContext> {
             if (!outWorkspace) {
               throw new WorkspaceRequiredError(project.cwd, this.context.cwd)
             }
+
+            outWorkspace.manifest.devDependencies.clear()
+
             const outCache = await Cache.find(outConfiguration, {
               immutable: false,
               check: false,
             })
 
             const multiFetcher = configuration.makeFetcher()
-            const multiResolver = configuration.makeResolver()
+            const multiResolver = new MultiResolver([
+              new LockfileResolver(),
+              configuration.makeResolver(),
+            ])
 
             const resolver = new ProductionInstallResolver({
               project,
               resolver: multiResolver,
+              stripTypes: this.stripTypes,
             })
 
             const fetcher = new ProductionInstallFetcher({
               cache,
-              multiFetcher,
-              workspace,
+              fetcher: multiFetcher,
               project,
-              outConfiguration,
-              outDirectoryPath,
+            })
+
+            await this.modifyOriginalResolutions(outProject, resolver, {
+              project: outProject,
+              fetchOptions: {
+                cache: outCache,
+                project: outProject,
+                fetcher,
+                checksums: outProject.storedChecksums,
+                report,
+              },
+              resolver,
+              report,
             })
 
             await outProject.install({
@@ -230,69 +258,118 @@ class ProdInstall extends Command<CommandContext> {
             await report.startTimerPromise(
               'Cleaning up unused dependencies',
               async () => {
-                const toRemove = this.cleanUpPatchSources(outProject, outCache)
+                const toRemove: Array<PortablePath> = []
+
+                toRemove.push(
+                  ...(await this.getPatchSourcesToRemove(outProject, outCache)),
+                )
+
                 for (const locatorPath of toRemove) {
-                  report.reportInfo(
-                    MessageName.UNUSED_CACHE_ENTRY,
-                    `${ppath.basename(
-                      locatorPath,
-                    )} appears to be unused - removing`,
-                  )
-                  xfs.removeSync(locatorPath)
+                  if (await xfs.existsPromise(locatorPath)) {
+                    report.reportInfo(
+                      MessageName.UNUSED_CACHE_ENTRY,
+                      `${ppath.basename(
+                        locatorPath,
+                      )} appears to be unused - removing`,
+                    )
+                    await xfs.removePromise(locatorPath)
+                  }
                 }
               },
             )
           },
         )
+
+        if (this.pack) {
+          await report.startTimerPromise('Packing workspace ', async () => {
+            await packUtils.prepareForPack(workspace, { report }, async () => {
+              report.reportJson({ base: workspace.cwd })
+
+              const files = await packUtils.genPackList(workspace)
+
+              for (const file of files) {
+                report.reportInfo(null, file)
+                report.reportJson({ location: file })
+                if (file.endsWith(ManifestFile)) {
+                  const manifest = await packUtils.genPackageManifest(workspace)
+                  await xfs.writeJsonPromise(
+                    ppath.resolve(outDirectoryPath, file),
+                    manifest,
+                  )
+                }
+                else {
+                  await copyFile(workspace.cwd, outDirectoryPath, file)
+                }
+              }
+            })
+          })
+        }
       },
     )
+
     return report.exitCode()
   }
 
-  private cleanUpPatchSources(
+  private async getPatchSourcesToRemove(
     project: Project,
     cache: Cache,
-  ): Array<PortablePath> {
+  ): Promise<Array<PortablePath>> {
     const patchedPackages: Array<Package> = []
     project.storedPackages.forEach((storedPackage) => {
       if (storedPackage.reference.startsWith('patch:')) {
         patchedPackages.push(storedPackage)
       }
     })
-    const sourcePackagesMap: Map<Locator, Package> = new Map<Locator, Package>()
+    const toRemove: Array<PortablePath> = []
     for (const patchedPackage of patchedPackages) {
       const {
         sourceLocator 
       } = patchUtils.parseLocator(patchedPackage)
-      sourcePackagesMap.set(sourceLocator, patchedPackage)
-    }
-    const toRemove: Array<PortablePath> = []
-    sourcePackagesMap.forEach((patchedPackage, locator) => {
-      let used = false
-      project.storedPackages.forEach((storedPackage) => {
-        if (storedPackage.locatorHash === patchedPackage.locatorHash) {
-          return
-        }
-        storedPackage.dependencies.forEach((dependencyDescriptor) => {
-          const resolutionLocatorHash = project.storedResolutions.get(
-            dependencyDescriptor.descriptorHash,
-          )
-          if (resolutionLocatorHash === locator.locatorHash) {
-            used = true
-          }
-        })
-      })
-      if (!used) {
+      const sourcePackage = project.storedPackages.get(
+        sourceLocator.locatorHash,
+      )
+      if (!sourcePackage) {
+        // This should be an error but currently not going to throw
+        break
+      }
+      const dependencies = await dependenciesUtils.getDependents(
+        project,
+        sourcePackage,
+      )
+      if (
+        dependencies.filter(
+          (pkg) => pkg.locatorHash !== patchedPackage.locatorHash,
+        ).length > 0
+      ) {
         const locatorPath = cache.getLocatorPath(
-          locator,
-          project.storedChecksums.get(locator.locatorHash) ?? null,
+          sourceLocator,
+          project.storedChecksums.get(sourceLocator.locatorHash) ?? null,
         )
         if (locatorPath) {
           toRemove.push(locatorPath)
         }
       }
-    })
+    }
     return toRemove
+  }
+
+  private async modifyOriginalResolutions(
+    project: Project,
+    resolver: Resolver,
+    opts: ResolveOptions,
+  ) {
+    await opts.report.startTimerPromise(
+      'Modifying original install state',
+      async () => {
+        for (const [
+          locatorHash,
+          originalPackage,
+        ] of project.originalPackages.entries()) {
+          const resolvedPackage = await resolver.resolve(originalPackage, opts)
+          project.originalPackages.set(locatorHash, resolvedPackage)
+        }
+      },
+    )
   }
 }
 

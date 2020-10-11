@@ -1,0 +1,8 @@
+releases:
+  "@larry1123/yarn-plugin-production-install": minor
+  "@larry1123/yarn-plugin-script-lifecycles": patch
+
+declined:
+  - "@larry1123/yarn-contrib"
+  - "@larry1123/plugin-plugin"
+  - "@larry1123/yarn-utils"

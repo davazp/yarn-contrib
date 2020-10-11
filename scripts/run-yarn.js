@@ -20,16 +20,20 @@ require(`${__dirname}/../.pnp.js`).setup()
 
 require('ts-node').register({
   compiler: 'ttypescript',
+  transpileOnly: true,
   project: `${__dirname}/../tsconfig.base.json`,
 })
+
+global.YARN_VERSION = require(`@larry1123/yarn-contrib/package.json`).resolutions[
+  '@yarnpkg/cli'
+]
 
 const micromatch = require(`micromatch`)
 
 const {
- main, getPluginConfiguration 
+  main,
+  getPluginConfiguration,
 } = require('@yarnpkg/cli')
-
-global.YARN_VERSION = require(`@yarnpkg/cli/package.json`).version
 
 const pluginsDir = `${__dirname}/../packages/`
 
@@ -65,7 +69,6 @@ function getExtendedPluginConfiguration() {
     }
 
     if (checkIfDisabled()) {
-      console.warn(`Disabled plugin ${folder}`)
       return false
     }
 
@@ -97,4 +100,4 @@ function getExtendedPluginConfiguration() {
 main({
   binaryVersion: global.YARN_VERSION || '<unknown>',
   pluginConfiguration: getExtendedPluginConfiguration(),
-})
+}).catch(console.error.bind(console))

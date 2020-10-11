@@ -25,17 +25,26 @@ import {
   ResolveOptions,
   Resolver,
   WorkspaceResolver,
+  IdentHash,
 } from '@yarnpkg/core'
 
 export class ProductionInstallResolver implements Resolver {
   protected readonly resolver: Resolver
   protected readonly project: Project
+  protected readonly stripTypes: boolean
 
   constructor({
-    resolver, project 
-  }: { resolver: Resolver; project: Project }) {
+    resolver,
+    project,
+    stripTypes = true,
+  }: {
+    resolver: Resolver
+    project: Project
+    stripTypes: boolean
+  }) {
     this.resolver = resolver
     this.project = project
+    this.stripTypes = stripTypes
   }
 
   supportsDescriptor(
@@ -94,29 +103,51 @@ export class ProductionInstallResolver implements Resolver {
   }
 
   async resolve(locator: Locator, opts: ResolveOptions): Promise<Package> {
-    if (
-      locator.reference.startsWith(WorkspaceResolver.protocol) &&
-      locator.reference !== `${WorkspaceResolver.protocol}.`
-    ) {
-      const workspace = this.project.getWorkspaceByLocator(locator)
-      return {
-        ...locator,
-        version: workspace.manifest.version || `0.0.0`,
-        languageName: `unknown`,
-        linkType: LinkType.SOFT,
-        dependencies: new Map([...workspace.manifest.dependencies]),
-        peerDependencies: new Map([...workspace.manifest.peerDependencies]),
-        dependenciesMeta: workspace.manifest.dependenciesMeta,
-        peerDependenciesMeta: workspace.manifest.peerDependenciesMeta,
-        bin: workspace.manifest.bin,
+    const resolve = async (): Promise<Package> => {
+      if (
+        locator.reference.startsWith(WorkspaceResolver.protocol) &&
+        locator.reference !== `${WorkspaceResolver.protocol}.`
+      ) {
+        const workspace = this.project.getWorkspaceByLocator(locator)
+        return {
+          ...locator,
+          version: workspace.manifest.version || `0.0.0`,
+          languageName: `unknown`,
+          linkType: LinkType.SOFT,
+          dependencies: new Map([...workspace.manifest.dependencies]),
+          peerDependencies: new Map([...workspace.manifest.peerDependencies]),
+          dependenciesMeta: workspace.manifest.dependenciesMeta,
+          peerDependenciesMeta: workspace.manifest.peerDependenciesMeta,
+          bin: workspace.manifest.bin,
+        }
       }
+      return this.resolver.resolve(locator, opts)
     }
-    return this.resolver.resolve(locator, opts)
+    const resolvedPackage = await resolve()
+
+    const dependencies: Map<IdentHash, Descriptor> = new Map<
+    IdentHash,
+    Descriptor
+    >()
+    for (const [hash, descriptor] of resolvedPackage.dependencies.entries()) {
+      if (descriptor.scope === 'types' && this.stripTypes) {
+        continue
+      }
+      dependencies.set(hash, descriptor)
+    }
+
+    return {
+      ...resolvedPackage,
+      dependencies,
+    }
   }
 
   async getSatisfying(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _descriptor: Descriptor,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _references: Array<string>,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _opts: ResolveOptions,
   ): Promise<Array<Locator> | null> {
     return null

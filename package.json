@@ -13,18 +13,16 @@
     "build:esm": "ttsc --project $INIT_CWD/tsconfig.json --module esnext --outDir $INIT_CWD/esm",
     "build:plugin": "cd $INIT_CWD && builder build plugin",
     "docker:build": "docker buildx build .",
-    "docker:push:base": "docker push $(yarn run --silent docker:get:base-tag)",
     "format": "yarn workspaces foreach --parallel --exclude @larry1123/yarn-contrib run format",
     "format-package.json": "sort-package-json && sort-package-json **/*/package.json",
     "format:package.json": "cd $INIT_CWD && sort-package-json",
     "format:prettier": "prettier --write $INIT_CWD",
     "git:get:build-hash": "echo $(git rev-parse HEAD)$(git diff-index --quiet HEAD -- || echo -dirty)",
     "git:get:short-hash": "echo $(git rev-parse --short HEAD)$(git diff-index --quiet HEAD -- || echo -dirty)",
-    "git:pre-commit": "yarn version check",
+    "git:pre-commit": "lint-staged && yarn version check",
     "lint": "yarn run lint:eslint",
     "lint:eslint": "eslint $INIT_CWD --ext .js,.ts",
-    "run:ts-node": "cd $INIT_CWD && ts-node",
-    "test": "yarn add --help"
+    "run:ts-node": "cd $INIT_CWD && ts-node"
   },
   "husky": {
     "hooks": {
@@ -47,11 +45,25 @@
       "git add"
     ]
   },
+  "resolutions": {
+    "@types/node": "12.12.64",
+    "@yarnpkg/cli": "2.3.1",
+    "@yarnpkg/core": "2.3.0",
+    "@yarnpkg/fslib": "2.2.2",
+    "@yarnpkg/plugin-pack": "2.2.1",
+    "@yarnpkg/plugin-patch": "2.1.2",
+    "@yarnpkg/plugin-pnp": "2.3.0",
+    "@yarnpkg/plugin-version": "2.2.0",
+    "clipanion": "2.6.2",
+    "sort-package-json": "patch:sort-package-json@^1.46.0#./.yarn/patches/sort-package-json.patch",
+    "typescript-transform-paths": "2.0.1"
+  },
   "dependencies": {
     "@yarnpkg/cli": "^2.3.1",
     "@yarnpkg/core": "^2.3.0",
     "micromatch": "^4.0.2",
     "ts-node": "^9.0.0",
+    "tslib": "^2.0.2",
     "ttypescript": "^1.5.12",
     "typescript": "^4.0.3",
     "typescript-transform-paths": "^2.0.1"
@@ -70,17 +82,6 @@
     "lint-staged": "^10.4.0",
     "prettier": "^2.1.2",
     "sort-package-json": "^1.46.0"
-  },
-  "resolutions": {
-    "@yarnpkg/cli": "2.3.1",
-    "@yarnpkg/core": "2.3.0",
-    "@yarnpkg/fslib": "2.2.2",
-    "@yarnpkg/plugin-pack": "2.2.1",
-    "@yarnpkg/plugin-patch": "2.1.2",
-    "clipanion": "2.6.2",
-    "typescript-transform-paths": "2.0.1",
-    "@types/node": "12.12.64",
-    "sort-package-json": "patch:sort-package-json@^1.46.0#./.yarn/patches/sort-package-json.patch"
   },
   "engines": {
     "node": ">=12.0.0"
