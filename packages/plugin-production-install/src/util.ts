@@ -25,7 +25,11 @@ export async function copyFile(
   dist: PortablePath,
   file: PortablePath,
 ): Promise<void> {
-  return xfs.copyFilePromise(ppath.join(src, file), ppath.join(dist, file))
+  await xfs.mkdirpPromise(ppath.dirname(ppath.resolve(dist, file)))
+  return xfs.copyFilePromise(
+    ppath.resolve(src, file),
+    ppath.resolve(dist, file),
+  )
 }
 
 export async function copyFolder(
@@ -35,8 +39,8 @@ export async function copyFolder(
   exclude: Array<PortablePath> = [],
 ): Promise<void> {
   return copyFolderRecursivePromise(
-    ppath.join(src, folder),
-    ppath.join(dist, folder),
+    ppath.resolve(src, folder),
+    ppath.resolve(dist, folder),
     exclude,
   )
 }
@@ -52,8 +56,8 @@ export async function copyFolderRecursivePromise(
     }
     const files = await xfs.readdirPromise(source)
     for (const file of files) {
-      const curSource = ppath.join(source, file)
-      const curTarget = ppath.join(target, file)
+      const curSource = ppath.resolve(source, file)
+      const curTarget = ppath.resolve(target, file)
       const isExcluded = () => {
         for (const portablePath of exclude) {
           if (curSource.endsWith(portablePath)) return true

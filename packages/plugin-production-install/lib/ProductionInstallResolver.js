@@ -18,9 +18,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProductionInstallResolver = void 0;
 const core_1 = require("@yarnpkg/core");
 class ProductionInstallResolver {
-    constructor({ resolver, project }) {
+    constructor({ resolver, project, stripTypes = true, }) {
         this.resolver = resolver;
         this.project = project;
+        this.stripTypes = stripTypes;
     }
     supportsDescriptor(descriptor, opts) {
         return this.resolver.supportsDescriptor(descriptor, opts);
@@ -53,24 +54,44 @@ class ProductionInstallResolver {
         }
     }
     async resolve(locator, opts) {
-        if (locator.reference.startsWith(core_1.WorkspaceResolver.protocol) &&
-            locator.reference !== `${core_1.WorkspaceResolver.protocol}.`) {
-            const workspace = this.project.getWorkspaceByLocator(locator);
-            return {
-                ...locator,
-                version: workspace.manifest.version || `0.0.0`,
-                languageName: `unknown`,
-                linkType: core_1.LinkType.SOFT,
-                dependencies: new Map([...workspace.manifest.dependencies]),
-                peerDependencies: new Map([...workspace.manifest.peerDependencies]),
-                dependenciesMeta: workspace.manifest.dependenciesMeta,
-                peerDependenciesMeta: workspace.manifest.peerDependenciesMeta,
-                bin: workspace.manifest.bin,
-            };
+        const resolve = async () => {
+            if (locator.reference.startsWith(core_1.WorkspaceResolver.protocol) &&
+                locator.reference !== `${core_1.WorkspaceResolver.protocol}.`) {
+                const workspace = this.project.getWorkspaceByLocator(locator);
+                return {
+                    ...locator,
+                    version: workspace.manifest.version || `0.0.0`,
+                    languageName: `unknown`,
+                    linkType: core_1.LinkType.SOFT,
+                    dependencies: new Map([...workspace.manifest.dependencies]),
+                    peerDependencies: new Map([...workspace.manifest.peerDependencies]),
+                    dependenciesMeta: workspace.manifest.dependenciesMeta,
+                    peerDependenciesMeta: workspace.manifest.peerDependenciesMeta,
+                    bin: workspace.manifest.bin,
+                };
+            }
+            return this.resolver.resolve(locator, opts);
+        };
+        const resolvedPackage = await resolve();
+        const dependencies = new Map();
+        for (const [hash, descriptor] of resolvedPackage.dependencies.entries()) {
+            if (descriptor.scope === 'types' && this.stripTypes) {
+                continue;
+            }
+            dependencies.set(hash, descriptor);
         }
-        return this.resolver.resolve(locator, opts);
+        return {
+            ...resolvedPackage,
+            dependencies,
+        };
     }
-    async getSatisfying(_descriptor, _references, _opts) {
+    async getSatisfying(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _descriptor, 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _references, 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _opts) {
         return null;
     }
 }

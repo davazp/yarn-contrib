@@ -18,11 +18,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.copyFolderRecursivePromise = exports.copyFolder = exports.copyFile = void 0;
 const fslib_1 = require("@yarnpkg/fslib");
 async function copyFile(src, dist, file) {
-    return fslib_1.xfs.copyFilePromise(fslib_1.ppath.join(src, file), fslib_1.ppath.join(dist, file));
+    await fslib_1.xfs.mkdirpPromise(fslib_1.ppath.dirname(fslib_1.ppath.resolve(dist, file)));
+    return fslib_1.xfs.copyFilePromise(fslib_1.ppath.resolve(src, file), fslib_1.ppath.resolve(dist, file));
 }
 exports.copyFile = copyFile;
 async function copyFolder(src, dist, folder, exclude = []) {
-    return copyFolderRecursivePromise(fslib_1.ppath.join(src, folder), fslib_1.ppath.join(dist, folder), exclude);
+    return copyFolderRecursivePromise(fslib_1.ppath.resolve(src, folder), fslib_1.ppath.resolve(dist, folder), exclude);
 }
 exports.copyFolder = copyFolder;
 async function copyFolderRecursivePromise(source, target, exclude = []) {
@@ -32,8 +33,8 @@ async function copyFolderRecursivePromise(source, target, exclude = []) {
         }
         const files = await fslib_1.xfs.readdirPromise(source);
         for (const file of files) {
-            const curSource = fslib_1.ppath.join(source, file);
-            const curTarget = fslib_1.ppath.join(target, file);
+            const curSource = fslib_1.ppath.resolve(source, file);
+            const curTarget = fslib_1.ppath.resolve(target, file);
             const isExcluded = () => {
                 for (const portablePath of exclude) {
                     if (curSource.endsWith(portablePath))
