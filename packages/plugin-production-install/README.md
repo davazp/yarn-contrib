@@ -24,6 +24,10 @@ This plugin will create a minimal yarn install for a workspace.
 yarn plugin import https://gitlab.com/Larry1123/yarn-contrib/-/raw/master/packages/plugin-production-install/bundles/@yarnpkg/plugin-production-install.js
 ```
 
+### Known Issues
+
+`@yarnpkg/core` `2.3.1` contains a braking change that is not handled yet. Use `2.3.0`
+
 ## Example Dockerfile (Simple)
 
 ```dockerfile
