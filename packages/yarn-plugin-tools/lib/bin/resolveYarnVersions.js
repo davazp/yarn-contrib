@@ -26,13 +26,15 @@ async function main() {
     const { project } = await core_1.Project.find(configuration, cwd);
     const report = new core_1.StreamReport({
         configuration,
-        stdout: process.stdout
+        stdout: process.stdout,
     });
     const resolutions = await yarnResolutions_1.genResolutions(project, report);
     await yarnResolutions_1.updateProjectResolutions(project, resolutions, report);
     await report.finalize();
     return report.exitCode();
 }
-main().then((exitCode) => {
+main()
+    .then((exitCode) => {
     process.exit(exitCode);
-}).catch(console.error.bind(console));
+})
+    .catch(console.error.bind(console));

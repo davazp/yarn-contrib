@@ -21,13 +21,16 @@ import {
   Project,
   Report,
   httpUtils,
-  tgzUtils,
+  execUtils,
   structUtils,
-  Cache,
+  tgzUtils,
 } from '@yarnpkg/core'
 import {
   getPluginConfiguration 
 } from '@yarnpkg/cli'
+import {
+  parseResolution 
+} from '@yarnpkg/parsers'
 import {
   CwdFS,
   xfs 
@@ -99,20 +102,21 @@ export async function updateProjectResolutions(
   const {
     manifest 
   } = project.topLevelWorkspace
-  const rawManifest = manifest.exportTo({})
-  if (!rawManifest.resolutions) {
-    rawManifest.resolutions = {}
-  }
   for (const [pkg, version] of resolutions.entries()) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    rawManifest.resolutions[pkg] = version
+    manifest.resolutions.push({
+      pattern: parseResolution(pkg),
+      reference: version,
+    })
   }
-  manifest.load(rawManifest)
   await project.topLevelWorkspace.persistManifest()
 
-  const cache = await Cache.find(project.configuration)
-  await project.install({
-    cache,
-    report,
+  report.reportInfo(null, 'Running install to update project')
+  const passThrough = report.createStreamReporter()
+  await execUtils.pipevp('yarn', ['install'], {
+    cwd: project.cwd,
+    stdin: null,
+    stdout: passThrough,
+    stderr: passThrough,
   })
+  passThrough.destroy()
 }

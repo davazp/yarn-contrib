@@ -14,23 +14,25 @@
  * limitations under the License.
  */
 // imports
-import { Configuration, Project, StreamReport, } from '@yarnpkg/core';
+import { Configuration, Project, StreamReport } from '@yarnpkg/core';
 import { npath } from '@yarnpkg/fslib';
 import { getPluginConfiguration } from '@yarnpkg/cli';
-import { genResolutions, updateProjectResolutions, } from "../yarnResolutions";
+import { genResolutions, updateProjectResolutions } from "../yarnResolutions";
 async function main() {
     const cwd = npath.toPortablePath(process.cwd());
     const configuration = await Configuration.find(cwd, getPluginConfiguration(), { strict: false });
     const { project } = await Project.find(configuration, cwd);
     const report = new StreamReport({
         configuration,
-        stdout: process.stdout
+        stdout: process.stdout,
     });
     const resolutions = await genResolutions(project, report);
     await updateProjectResolutions(project, resolutions, report);
     await report.finalize();
     return report.exitCode();
 }
-main().then((exitCode) => {
+main()
+    .then((exitCode) => {
     process.exit(exitCode);
-}).catch(console.error.bind(console));
+})
+    .catch(console.error.bind(console));

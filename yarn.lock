@@ -343,6 +343,7 @@ __metadata:
     "@yarnpkg/cli": ^2.3.2
     "@yarnpkg/core": ^2.3.0
     "@yarnpkg/fslib": ^2.3.0
+    "@yarnpkg/parsers": ^2.3.0
     tslib: ^2.0.3
     typescript-transform-paths: ^2.0.1
   languageName: unknown
@@ -922,20 +923,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@yarnpkg/core@npm:2.3.0":
-  version: 2.3.0
-  resolution: "@yarnpkg/core@npm:2.3.0"
+"@yarnpkg/core@npm:2.3.1":
+  version: 2.3.1
+  resolution: "@yarnpkg/core@npm:2.3.1"
   dependencies:
     "@arcanis/slice-ansi": ^1.0.2
     "@types/semver": ^7.1.0
     "@types/treeify": ^1.0.0
-    "@yarnpkg/fslib": ^2.2.2
+    "@yarnpkg/fslib": ^2.3.0
     "@yarnpkg/json-proxy": ^2.1.0
     "@yarnpkg/libzip": ^2.2.1
-    "@yarnpkg/parsers": ^2.2.1
-    "@yarnpkg/pnp": ^2.3.0
-    "@yarnpkg/shell": ^2.3.0
-    binjumper: ^0.1.0
+    "@yarnpkg/parsers": ^2.3.0
+    "@yarnpkg/pnp": ^2.3.1
+    "@yarnpkg/shell": ^2.4.0
+    binjumper: ^0.1.2
     camelcase: ^5.3.1
     chalk: ^3.0.0
     ci-info: ^2.0.0
@@ -958,7 +959,7 @@ __metadata:
     treeify: ^1.1.0
     tslib: ^1.13.0
     tunnel: ^0.0.6
-  checksum: 95c3de4f8cda212076937c760fdfa9824cc85585111b6f4e950d88a981ab74aa9f2e4779a4b15515e0407c8403d56156f02eb2ecfdaea183e9cbfd762a6223db
+  checksum: d2236acac238cd409df88be37ded30315fb0681abc6dbb5a1e9d3c7c8c08b842a7e19662ff8a7b3f31eb526a1c35fb95f3656270ba3ed1a075e6fa74732e0ab2
   languageName: node
   linkType: hard
 
@@ -1593,7 +1594,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"binjumper@npm:^0.1.0":
+"binjumper@npm:^0.1.2":
   version: 0.1.2
   resolution: "binjumper@npm:0.1.2"
   checksum: 01d013f07746b6092eb0373cc4b955ef9363b47371b72a3ed2ee67ef339eab3189625a5f4bba92b48f1e551fab948eb1ac51f62920aa5bfa59a2ff0d40478ebc

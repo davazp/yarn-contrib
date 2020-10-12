@@ -49,7 +49,7 @@
     "@types/node": "12.12.64",
     "@yarnpkg/builder": "2.1.2",
     "@yarnpkg/cli": "2.3.2",
-    "@yarnpkg/core": "2.3.0",
+    "@yarnpkg/core": "2.3.1",
     "@yarnpkg/doctor": "2.1.2",
     "@yarnpkg/eslint-config": "0.2.0",
     "@yarnpkg/fslib": "2.3.0",

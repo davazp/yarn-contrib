@@ -76,7 +76,7 @@ class ProductionInstallResolver {
         const resolvedPackage = await resolve();
         const dependencies = new Map();
         for (const [hash, descriptor] of resolvedPackage.dependencies.entries()) {
-            if (descriptor.scope === 'types' && this.stripTypes) {
+            if (this.stripTypes && descriptor.scope === 'types') {
                 continue;
             }
             dependencies.set(hash, descriptor);

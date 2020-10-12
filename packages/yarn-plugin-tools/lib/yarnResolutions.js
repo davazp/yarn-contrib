@@ -19,11 +19,12 @@ exports.updateProjectResolutions = exports.genResolutions = void 0;
 // imports
 const core_1 = require("@yarnpkg/core");
 const cli_1 = require("@yarnpkg/cli");
+const parsers_1 = require("@yarnpkg/parsers");
 const fslib_1 = require("@yarnpkg/fslib");
 const yarnDownloadUrl = 'https://github.com/yarnpkg/berry/archive/master.tar.gz';
 async function genResolutions(project, report) {
     const sourceBuffer = await report.startTimerPromise('Downloading yarn repo archive', async () => {
-        return await core_1.httpUtils.get(yarnDownloadUrl, { configuration: project.configuration });
+        return (await core_1.httpUtils.get(yarnDownloadUrl, { configuration: project.configuration }));
     });
     return await fslib_1.xfs.mktempPromise(async (extractPath) => {
         var _a, _b, _c;
@@ -33,9 +34,9 @@ async function genResolutions(project, report) {
         });
         const configuration = await core_1.Configuration.find(extractPath, cli_1.getPluginConfiguration(), {
             usePath: false,
-            strict: false
+            strict: false,
         });
-        const { project: yarnProject, } = await core_1.Project.find(configuration, extractPath);
+        const { project: yarnProject } = await core_1.Project.find(configuration, extractPath);
         await yarnProject.restoreInstallState();
         const resolutions = new Map();
         for (const workspace of yarnProject.workspaces) {
@@ -53,20 +54,21 @@ async function genResolutions(project, report) {
 exports.genResolutions = genResolutions;
 async function updateProjectResolutions(project, resolutions, report) {
     const { manifest } = project.topLevelWorkspace;
-    const rawManifest = manifest.exportTo({});
-    if (!rawManifest.resolutions) {
-        rawManifest.resolutions = {};
-    }
     for (const [pkg, version] of resolutions.entries()) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        rawManifest.resolutions[pkg] = version;
+        manifest.resolutions.push({
+            pattern: parsers_1.parseResolution(pkg),
+            reference: version,
+        });
     }
-    manifest.load(rawManifest);
     await project.topLevelWorkspace.persistManifest();
-    const cache = await core_1.Cache.find(project.configuration);
-    await project.install({
-        cache,
-        report,
+    report.reportInfo(null, 'Running install to update project');
+    const passThrough = report.createStreamReporter();
+    await core_1.execUtils.pipevp('yarn', ['install'], {
+        cwd: project.cwd,
+        stdin: null,
+        stdout: passThrough,
+        stderr: passThrough,
     });
+    passThrough.destroy();
 }
 exports.updateProjectResolutions = updateProjectResolutions;

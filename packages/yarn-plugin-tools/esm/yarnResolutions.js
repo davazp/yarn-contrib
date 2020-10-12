@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 // imports
-import { Configuration, Project, httpUtils, tgzUtils, structUtils, Cache, } from '@yarnpkg/core';
+import { Configuration, Project, httpUtils, execUtils, structUtils, tgzUtils, } from '@yarnpkg/core';
 import { getPluginConfiguration } from '@yarnpkg/cli';
-import { CwdFS, xfs, } from '@yarnpkg/fslib';
+import { parseResolution } from '@yarnpkg/parsers';
+import { CwdFS, xfs } from '@yarnpkg/fslib';
 const yarnDownloadUrl = 'https://github.com/yarnpkg/berry/archive/master.tar.gz';
 export async function genResolutions(project, report) {
     const sourceBuffer = await report.startTimerPromise('Downloading yarn repo archive', async () => {
-        return await httpUtils.get(yarnDownloadUrl, { configuration: project.configuration });
+        return (await httpUtils.get(yarnDownloadUrl, { configuration: project.configuration }));
     });
     return await xfs.mktempPromise(async (extractPath) => {
         var _a, _b, _c;
@@ -30,9 +31,9 @@ export async function genResolutions(project, report) {
         });
         const configuration = await Configuration.find(extractPath, getPluginConfiguration(), {
             usePath: false,
-            strict: false
+            strict: false,
         });
-        const { project: yarnProject, } = await Project.find(configuration, extractPath);
+        const { project: yarnProject } = await Project.find(configuration, extractPath);
         await yarnProject.restoreInstallState();
         const resolutions = new Map();
         for (const workspace of yarnProject.workspaces) {
@@ -49,19 +50,20 @@ export async function genResolutions(project, report) {
 }
 export async function updateProjectResolutions(project, resolutions, report) {
     const { manifest } = project.topLevelWorkspace;
-    const rawManifest = manifest.exportTo({});
-    if (!rawManifest.resolutions) {
-        rawManifest.resolutions = {};
-    }
     for (const [pkg, version] of resolutions.entries()) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        rawManifest.resolutions[pkg] = version;
+        manifest.resolutions.push({
+            pattern: parseResolution(pkg),
+            reference: version,
+        });
     }
-    manifest.load(rawManifest);
     await project.topLevelWorkspace.persistManifest();
-    const cache = await Cache.find(project.configuration);
-    await project.install({
-        cache,
-        report,
+    report.reportInfo(null, 'Running install to update project');
+    const passThrough = report.createStreamReporter();
+    await execUtils.pipevp('yarn', ['install'], {
+        cwd: project.cwd,
+        stdin: null,
+        stdout: passThrough,
+        stderr: passThrough,
     });
+    passThrough.destroy();
 }

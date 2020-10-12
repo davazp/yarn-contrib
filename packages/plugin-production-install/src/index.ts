@@ -25,6 +25,10 @@ import type {
   Resolver,
 } from '@yarnpkg/core'
 import type {
+  // ok so this is not exported by the index FUN!
+  PackageExtension,
+} from '@yarnpkg/core/lib/Configuration'
+import type {
   PortablePath 
 } from '@yarnpkg/fslib'
 import type {
@@ -200,15 +204,24 @@ class ProdInstall extends Command<CommandContext> {
 
             if (this.stripTypes) {
               for (const [
-                identHash,
-                extensionsPerIdent,
+                ident,
+                extensionsByIdent,
               ] of outConfiguration.packageExtensions.entries()) {
-                outConfiguration.packageExtensions.set(
-                  identHash,
-                  extensionsPerIdent.filter(
-                    (extension) => extension?.descriptor?.scope !== 'types',
-                  ),
-                )
+                const identExt: Array<[string, Array<PackageExtension>]> = []
+                for (const [range, extensionsByRange] of extensionsByIdent) {
+                  identExt.push([
+                    range,
+                    extensionsByRange.filter(
+                      (extension: PackageExtension) =>
+                        // TODO solve without ts-ignore
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                        extension?.descriptor?.scope !== 'types',
+                    ),
+                  ])
+                }
+                outConfiguration.packageExtensions.set(ident, identExt)
               }
             }
 

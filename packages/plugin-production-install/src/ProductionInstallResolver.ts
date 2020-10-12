@@ -137,12 +137,11 @@ export class ProductionInstallResolver implements Resolver {
     Descriptor
     >()
     for (const [hash, descriptor] of resolvedPackage.dependencies.entries()) {
-      if (descriptor.scope === 'types' && this.stripTypes) {
+      if (this.stripTypes && descriptor.scope === 'types') {
         continue
       }
       dependencies.set(hash, descriptor)
     }
-
     return {
       ...resolvedPackage,
       dependencies,

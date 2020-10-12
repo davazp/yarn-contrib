@@ -84,8 +84,20 @@ class ProdInstall extends clipanion_1.Command {
             await report.startTimerPromise('Installing production version', async () => {
                 const outConfiguration = await core_1.Configuration.find(outDirectoryPath, this.context.plugins);
                 if (this.stripTypes) {
-                    for (const [identHash, extensionsPerIdent,] of outConfiguration.packageExtensions.entries()) {
-                        outConfiguration.packageExtensions.set(identHash, extensionsPerIdent.filter((extension) => { var _a; return ((_a = extension === null || extension === void 0 ? void 0 : extension.descriptor) === null || _a === void 0 ? void 0 : _a.scope) !== 'types'; }));
+                    for (const [ident, extensionsByIdent,] of outConfiguration.packageExtensions.entries()) {
+                        const identExt = [];
+                        for (const [range, extensionsByRange] of extensionsByIdent) {
+                            identExt.push([
+                                range,
+                                extensionsByRange.filter((extension) => { var _a; 
+                                // TODO solve without ts-ignore
+                                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                                // @ts-ignore
+                                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                                return ((_a = extension === null || extension === void 0 ? void 0 : extension.descriptor) === null || _a === void 0 ? void 0 : _a.scope) !== 'types'; }),
+                            ]);
+                        }
+                        outConfiguration.packageExtensions.set(ident, identExt);
                     }
                 }
                 const { project: outProject, workspace: outWorkspace, } = await core_1.Project.find(outConfiguration, outDirectoryPath);
