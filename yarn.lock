@@ -259,11 +259,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@larry1123/yarn-contrib@workspace:."
   dependencies:
+    "@larry1123/yarn-plugin-tools": "workspace:packages/yarn-plugin-tools"
     "@typescript-eslint/eslint-plugin": ^4.4.0
     "@typescript-eslint/parser": ^4.4.0
     "@yarnpkg/builder": ^2.1.2
-    "@yarnpkg/cli": ^2.3.1
-    "@yarnpkg/core": ^2.3.0
     eslint: ^7.10.0
     eslint-config-prettier: ^6.12.0
     eslint-plugin-disable: ^2.0.1
@@ -272,7 +271,6 @@ __metadata:
     eslint-plugin-modules-newline: ^0.0.4
     husky: ^4.3.0
     lint-staged: ^10.4.0
-    micromatch: ^4.0.2
     prettier: ^2.1.2
     sort-package-json: ^1.46.0
     ts-node: ^9.0.0
@@ -339,11 +337,15 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@larry1123/yarn-plugin-tools@workspace:packages/yarn-plugin-tools"
   dependencies:
+    "@types/debug": ^4.1.5
+    "@types/micromatch": ^4.0.1
     "@types/node": ^12.0.0
     "@yarnpkg/cli": ^2.3.2
     "@yarnpkg/core": ^2.3.0
     "@yarnpkg/fslib": ^2.3.0
     "@yarnpkg/parsers": ^2.3.0
+    debug: ^4.2.0
+    micromatch: ^4.0.2
     tslib: ^2.0.3
     typescript-transform-paths: ^2.0.1
   languageName: unknown
@@ -415,6 +417,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/braces@npm:*":
+  version: 3.0.0
+  resolution: "@types/braces@npm:3.0.0"
+  checksum: 4bebd28e5b04c7e4930997017343516a2ab8fab2bcc64095da1e3b927c173f48c4bc3c75f3ef8037e9e8c7a54e0133b8705887ae52c8f9adb11dfb8d32cd9b78
+  languageName: node
+  linkType: hard
+
 "@types/cacheable-request@npm:^6.0.1":
   version: 6.0.1
   resolution: "@types/cacheable-request@npm:6.0.1"
@@ -431,6 +440,13 @@ __metadata:
   version: 1.1.1
   resolution: "@types/color-name@npm:1.1.1"
   checksum: 8311db94a9c4ecd247763b81e783ee49d87678b4ce6a7ee502e2bd5cea242b7357804a04855db009f713174bc654cc0c01c7303d40d757e5d710f5ac0368500f
+  languageName: node
+  linkType: hard
+
+"@types/debug@npm:^4.1.5":
+  version: 4.1.5
+  resolution: "@types/debug@npm:4.1.5"
+  checksum: 416ad24bc589be0fb8c78bea972aa7d4ffdf6b136239701b1792674463b2dbf8c6707f6055ec484f79ec1f2b528ffef90c87e55df7e4a0f458184cad5bf0cfc8
   languageName: node
   linkType: hard
 
@@ -505,6 +521,15 @@ __metadata:
   dependencies:
     "@types/node": "*"
   checksum: 3aaf557d5b82e733d5a17b7f55af5d6be953363c3a594f006d64265790fe87c301c6e1400c0b6b1cf72add50a0ceddc25afb8231ab8302a2e5b6ebfbfac30e5d
+  languageName: node
+  linkType: hard
+
+"@types/micromatch@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "@types/micromatch@npm:4.0.1"
+  dependencies:
+    "@types/braces": "*"
+  checksum: 50c26e31fad668994476f8b027c83e86f849586ea1b971d0e16998bcb51f8522dd188c7e2511616d9148464631b5cd5dc5a073aa0a0475cb12b3e1b0b99f315d
   languageName: node
   linkType: hard
 
@@ -1973,6 +1998,18 @@ __metadata:
     supports-color:
       optional: true
   checksum: dcfb8ede26b4d899628a75806923ab9ad29daae7db0f6f1ca6227b660693ae0ca085c7f87261793abe0832ad56aff2afc33f907c6b5dc96a41fc208771feb465
+  languageName: node
+  linkType: hard
+
+"debug@npm:^4.2.0":
+  version: 4.3.0
+  resolution: "debug@npm:4.3.0"
+  dependencies:
+    ms: 2.1.2
+  peerDependenciesMeta:
+    supports-color:
+      optional: true
+  checksum: 847d2760d1493cfaef53fb67d8943c6afaba30472d7527450c19919d230dde04f2275dd8dd5c2874c7103787c190d3b5d3dbc2ee7596a12d853a2ce35c4b8b1b
   languageName: node
   linkType: hard
 

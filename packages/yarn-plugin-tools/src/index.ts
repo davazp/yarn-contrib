@@ -14,20 +14,11 @@
  * limitations under the License.
  */
 
-require(`${__dirname}/../.pnp.js`).setup()
+export {
+  run as runYarn 
+} from './run-yarn'
 
-require('ts-node').register({
-  compiler: 'ttypescript',
-  transpileOnly: true,
-  project: `${__dirname}/../tsconfig.base.json`,
-})
-
-global.YARN_VERSION = require(`@larry1123/yarn-contrib/package.json`).resolutions[
-  '@yarnpkg/cli'
-]
-
-const {
- runYarn 
-} = require('@larry1123/yarn-plugin-tools')
-
-runYarn().catch(console.error.bind(console))
+export {
+  genResolutions,
+  updateProjectResolutions 
+} from './yarnResolutions'

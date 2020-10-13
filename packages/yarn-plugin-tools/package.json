@@ -1,17 +1,17 @@
 {
   "name": "@larry1123/yarn-plugin-tools",
+  "version": "1.0.0",
   "license": "Apache-2.0",
   "main": "src/index.ts",
   "files": [
-    "esm",
     "lib"
   ],
   "scripts": {
     "pre-build": "yarn run clean",
     "build": "yarn run build:yarn-plugin-tools",
-    "build:yarn-plugin-tools": "yarn run build:cjs --declaration && yarn run build:esm --declaration",
+    "build:yarn-plugin-tools": "yarn run build:cjs --declaration",
     "clean": "yarn run clean:yarn-plugin-tools",
-    "clean:yarn-plugin-tools": "rm -rf lib esm",
+    "clean:yarn-plugin-tools": "rm -rf lib",
     "format": "yarn run format:package.json && yarn run format:prettier && yarn run lint:eslint --fix",
     "prepack": "yarn run build",
     "run:resolveYarnVersions": "yarn run run:ts-node src/bin/resolveYarnVersions.ts"
@@ -21,9 +21,13 @@
     "@yarnpkg/core": "^2.3.0",
     "@yarnpkg/fslib": "^2.3.0",
     "@yarnpkg/parsers": "^2.3.0",
+    "debug": "^4.2.0",
+    "micromatch": "^4.0.2",
     "tslib": "^2.0.3"
   },
   "devDependencies": {
+    "@types/debug": "^4.1.5",
+    "@types/micromatch": "^4.0.1",
     "@types/node": "^12.0.0",
     "typescript-transform-paths": "^2.0.1"
   },
@@ -32,7 +36,6 @@
       "resolveYarnVersions": "./lib/bin/resolveYarnVersions.js"
     },
     "main": "lib/index.js",
-    "module": "esm/index.js",
     "types": "lib/index.d.ts"
   }
 }
