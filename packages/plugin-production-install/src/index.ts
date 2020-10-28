@@ -18,6 +18,7 @@
 
 import type {
   Plugin,
+  Hooks,
   CommandContext,
   Package,
   ConfigurationValueMap,
@@ -183,8 +184,20 @@ class ProdInstall extends Command<CommandContext> {
             checkConfigurationToExclude('bstatePath')
             checkConfigurationToExclude('installStatePath')
             checkConfigurationToExclude('cacheFolder')
-            checkConfigurationToExclude('pnpUnpluggedFolder')
             checkConfigurationToExclude('deferredVersionFolder')
+
+            await configuration.triggerHook(
+              (hooks: Hooks) => {
+                return hooks.populateYarnPaths
+              },
+              project,
+              (path: PortablePath | null) => {
+                if (path) {
+                  yarnExcludes.push(path)
+                }
+              },
+            )
+
             await copyFolder(
               rootDirectoryPath,
               outDirectoryPath,

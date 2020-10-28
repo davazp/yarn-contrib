@@ -1,0 +1,3 @@
+releases:
+  "@larry1123/yarn-plugin-production-install": patch
+  "@larry1123/yarn-plugin-script-lifecycles": major

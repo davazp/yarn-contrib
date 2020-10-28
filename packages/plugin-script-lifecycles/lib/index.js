@@ -25,15 +25,7 @@ async function wrapScriptExecution(executor, project, locator, scriptName, extra
     const { configuration } = project;
     const userScriptLifecycleExcludes = configuration.get('userScriptLifecycleExcludes');
     const lifecycleScriptEnabled = !userScriptLifecycleExcludes.get(scriptName);
-    const shouldReport = extra.env['plugin_script_lifecycles_silent'] === undefined;
     return async () => {
-        var _a;
-        const report = shouldReport
-            ? new core_1.StreamReport({
-                configuration,
-                stdout: extra.stdout,
-            })
-            : null;
         const workspaceByCwd = project.tryWorkspaceByLocator(locator);
         if (workspaceByCwd === null) {
             return executor();
@@ -47,61 +39,42 @@ async function wrapScriptExecution(executor, project, locator, scriptName, extra
             const lifecycleScriptName = `${lifecycle}${scriptName}`;
             if (lifecycleScriptEnabled &&
                 (await core_1.scriptUtils.hasPackageScript(locator, lifecycleScriptName, { project }))) {
-                const streamReporter = report === null || report === void 0 ? void 0 : report.createStreamReporter();
-                try {
-                    return await core_1.scriptUtils.executePackageScript(locator, lifecycleScriptName, [], {
-                        cwd: extra.cwd,
-                        project,
-                        stdin: extra.stdin,
-                        stdout: streamReporter !== null && streamReporter !== void 0 ? streamReporter : extra.stdout,
-                        stderr: streamReporter !== null && streamReporter !== void 0 ? streamReporter : extra.stderr,
-                    });
-                }
-                finally {
-                    streamReporter === null || streamReporter === void 0 ? void 0 : streamReporter.destroy();
-                }
+                return await core_1.scriptUtils.executePackageScript(locator, lifecycleScriptName, [], {
+                    cwd: extra.cwd,
+                    project,
+                    stdin: extra.stdin,
+                    stdout: extra.stdout,
+                    stderr: extra.stderr,
+                });
             }
             else {
                 return 0;
             }
         }
-        try {
-            if (!scriptName.startsWith(prefixes.pre)) {
-                const pre = await tryLifecycleScript(prefixes.pre);
-                if (pre !== 0) {
-                    return pre;
-                }
-            }
-            const runMainScript = async () => {
-                report === null || report === void 0 ? void 0 : report.reportInfo(null, `➤ ${script}`);
-                const streamReporter = report === null || report === void 0 ? void 0 : report.createStreamReporter();
-                try {
-                    return await core_1.scriptUtils.executePackageShellcode(locator, script, extra.args, {
-                        cwd: extra.cwd,
-                        project,
-                        stdin: extra.stdin,
-                        stdout: streamReporter !== null && streamReporter !== void 0 ? streamReporter : extra.stdout,
-                        stderr: streamReporter !== null && streamReporter !== void 0 ? streamReporter : extra.stderr,
-                    });
-                }
-                finally {
-                    streamReporter === null || streamReporter === void 0 ? void 0 : streamReporter.destroy();
-                }
-            };
-            const main = (_a = (await (report === null || report === void 0 ? void 0 : report.startTimerPromise(`Running ${scriptName}`, runMainScript)))) !== null && _a !== void 0 ? _a : (await runMainScript());
-            if (main !== 0) {
-                report === null || report === void 0 ? void 0 : report.reportError(core_1.MessageName.EXCEPTION, `Script '${scriptName}' returned non-zero return code. (${main})`);
-                return main;
-            }
-            if (!scriptName.startsWith(prefixes.post)) {
-                const post = await tryLifecycleScript(prefixes.post);
-                if (post !== 0) {
-                    return post;
-                }
+        if (!scriptName.startsWith(prefixes.pre)) {
+            const pre = await tryLifecycleScript(prefixes.pre);
+            if (pre !== 0) {
+                return pre;
             }
         }
-        finally {
-            await (report === null || report === void 0 ? void 0 : report.finalize());
+        const runMainScript = async () => {
+            return await core_1.scriptUtils.executePackageShellcode(locator, script, extra.args, {
+                cwd: extra.cwd,
+                project,
+                stdin: extra.stdin,
+                stdout: extra.stdout,
+                stderr: extra.stderr,
+            });
+        };
+        const main = await runMainScript();
+        if (main !== 0) {
+            return main;
+        }
+        if (!scriptName.startsWith(prefixes.post)) {
+            const post = await tryLifecycleScript(prefixes.post);
+            if (post !== 0) {
+                return post;
+            }
         }
         return 0;
     };

@@ -77,8 +77,14 @@ class ProdInstall extends clipanion_1.Command {
                 checkConfigurationToExclude('bstatePath');
                 checkConfigurationToExclude('installStatePath');
                 checkConfigurationToExclude('cacheFolder');
-                checkConfigurationToExclude('pnpUnpluggedFolder');
                 checkConfigurationToExclude('deferredVersionFolder');
+                await configuration.triggerHook((hooks) => {
+                    return hooks.populateYarnPaths;
+                }, project, (path) => {
+                    if (path) {
+                        yarnExcludes.push(path);
+                    }
+                });
                 await util_1.copyFolder(rootDirectoryPath, outDirectoryPath, `.yarn`, yarnExcludes);
             });
             await report.startTimerPromise('Installing production version', async () => {

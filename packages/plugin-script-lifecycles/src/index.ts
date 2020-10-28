@@ -33,10 +33,8 @@ import type {
 
 // Imports
 import {
-  MessageName,
   scriptUtils,
-  SettingsType,
-  StreamReport,
+  SettingsType 
 } from '@yarnpkg/core'
 
 type ProcessEnvironment = { [key: string]: string }
@@ -72,17 +70,7 @@ async function wrapScriptExecution(
   )
   const lifecycleScriptEnabled = !userScriptLifecycleExcludes.get(scriptName)
 
-  const shouldReport =
-    extra.env['plugin_script_lifecycles_silent'] === undefined
-
   return async () => {
-    const report = shouldReport
-      ? new StreamReport({
-        configuration,
-        stdout: extra.stdout,
-      })
-      : null
-
     const workspaceByCwd = project.tryWorkspaceByLocator(locator)
     if (workspaceByCwd === null) {
       return executor()
@@ -99,81 +87,56 @@ async function wrapScriptExecution(
         lifecycleScriptEnabled &&
         (await scriptUtils.hasPackageScript(locator, lifecycleScriptName, {project}))
       ) {
-        const streamReporter = report?.createStreamReporter()
-        try {
-          return await scriptUtils.executePackageScript(
-            locator,
-            lifecycleScriptName,
-            [],
-            {
-              cwd: extra.cwd,
-              project,
-              stdin: extra.stdin,
-              stdout: streamReporter ?? extra.stdout,
-              stderr: streamReporter ?? extra.stderr,
-            },
-          )
-        }
-        finally {
-          streamReporter?.destroy()
-        }
+        return await scriptUtils.executePackageScript(
+          locator,
+          lifecycleScriptName,
+          [],
+          {
+            cwd: extra.cwd,
+            project,
+            stdin: extra.stdin,
+            stdout: extra.stdout,
+            stderr: extra.stderr,
+          },
+        )
       }
       else {
         return 0
       }
     }
 
-    try {
-      if (!scriptName.startsWith(prefixes.pre)) {
-        const pre = await tryLifecycleScript(prefixes.pre)
-        if (pre !== 0) {
-          return pre
-        }
+    if (!scriptName.startsWith(prefixes.pre)) {
+      const pre = await tryLifecycleScript(prefixes.pre)
+      if (pre !== 0) {
+        return pre
       }
+    }
 
-      const runMainScript = async () => {
-        report?.reportInfo(null, `➤ ${script}`)
-        const streamReporter = report?.createStreamReporter()
-        try {
-          return await scriptUtils.executePackageShellcode(
-            locator,
-            script,
-            extra.args,
-            {
-              cwd: extra.cwd,
-              project,
-              stdin: extra.stdin,
-              stdout: streamReporter ?? extra.stdout,
-              stderr: streamReporter ?? extra.stderr,
-            },
-          )
-        }
-        finally {
-          streamReporter?.destroy()
-        }
-      }
-      const main =
-        (await report?.startTimerPromise(
-          `Running ${scriptName}`,
-          runMainScript,
-        )) ?? (await runMainScript())
-      if (main !== 0) {
-        report?.reportError(
-          MessageName.EXCEPTION,
-          `Script '${scriptName}' returned non-zero return code. (${main})`,
-        )
-        return main
-      }
-      if (!scriptName.startsWith(prefixes.post)) {
-        const post = await tryLifecycleScript(prefixes.post)
-        if (post !== 0) {
-          return post
-        }
+    const runMainScript = async () => {
+      return await scriptUtils.executePackageShellcode(
+        locator,
+        script,
+        extra.args,
+        {
+          cwd: extra.cwd,
+          project,
+          stdin: extra.stdin,
+          stdout: extra.stdout,
+          stderr: extra.stderr,
+        },
+      )
+    }
+    const main = await runMainScript()
+    if (main !== 0) {
+      return main
+    }
+    if (!scriptName.startsWith(prefixes.post)) {
+      const post = await tryLifecycleScript(prefixes.post)
+      if (post !== 0) {
+        return post
       }
     }
-    finally {
-      await report?.finalize()
-    }
+
     return 0
   }
 }

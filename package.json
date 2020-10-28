@@ -1,6 +1,5 @@
 {
   "name": "@larry1123/yarn-contrib",
-  "version": "1.0.0",
   "private": true,
   "repository": "git@gitlab.com:larry1123/yarn-contrib.git",
   "license": "Apache-2.0",
