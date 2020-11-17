@@ -1,1 +1,2 @@
-export declare function run(): Promise<void>;
+import type { PortablePath } from '@yarnpkg/fslib';
+export declare function run(cwd?: PortablePath, disabledPlugins?: string): Promise<void>;

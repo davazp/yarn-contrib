@@ -34,7 +34,7 @@ class ProdInstall extends clipanion_1.Command {
     constructor() {
         super(...arguments);
         this.json = false;
-        this.stripTypes = true;
+        this.noStripTypes = false;
         this.pack = false;
         this.silent = false;
     }
@@ -89,7 +89,7 @@ class ProdInstall extends clipanion_1.Command {
             });
             await report.startTimerPromise('Installing production version', async () => {
                 const outConfiguration = await core_1.Configuration.find(outDirectoryPath, this.context.plugins);
-                if (this.stripTypes) {
+                if (!this.noStripTypes) {
                     for (const [ident, extensionsByIdent,] of outConfiguration.packageExtensions.entries()) {
                         const identExt = [];
                         for (const [range, extensionsByRange] of extensionsByIdent) {
@@ -123,7 +123,7 @@ class ProdInstall extends clipanion_1.Command {
                 const resolver = new ProductionInstallResolver_1.ProductionInstallResolver({
                     project,
                     resolver: multiResolver,
-                    stripTypes: this.stripTypes,
+                    stripTypes: !this.noStripTypes,
                 });
                 const fetcher = new ProductionInstallFetcher_1.ProductionInstallFetcher({
                     cache,
@@ -231,8 +231,8 @@ tslib_1.__decorate([
     clipanion_1.Command.Boolean(`--json`)
 ], ProdInstall.prototype, "json", void 0);
 tslib_1.__decorate([
-    clipanion_1.Command.Boolean(`--strip-types`)
-], ProdInstall.prototype, "stripTypes", void 0);
+    clipanion_1.Command.Boolean(`--no-strip-types`)
+], ProdInstall.prototype, "noStripTypes", void 0);
 tslib_1.__decorate([
     clipanion_1.Command.Boolean(`--pack`)
 ], ProdInstall.prototype, "pack", void 0);

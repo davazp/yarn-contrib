@@ -41,11 +41,12 @@ import {
   stringifyResolution 
 } from '@yarnpkg/parsers'
 
-const disabledPlugins = process.env.DISABLED_PLUGINS
 const debug = Debug('@larry1123/yarn-plugin-tools:run-yarn')
 
-export async function run(): Promise<void> {
-  const cwd = process.cwd() as PortablePath
+export async function run(
+  cwd: PortablePath = process.cwd() as PortablePath,
+  disabledPlugins?: string,
+): Promise<void> {
   const configuration = await Configuration.find(cwd, null, {
     strict: false,
     usePath: false,

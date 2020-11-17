@@ -22,15 +22,19 @@ import {
   StreamReport 
 } from '@yarnpkg/core'
 import {
-  npath 
+  npath,
+  xfs 
 } from '@yarnpkg/fslib'
 import {
   getPluginConfiguration 
 } from '@yarnpkg/cli'
 
 import {
+  downloadAndExtractYarn,
   genResolutions,
-  updateProjectResolutions 
+  readyYarnProject,
+  updateInstall,
+  updateProjectResolutions,
 } from '../yarnResolutions'
 
 async function main() {
@@ -49,8 +53,14 @@ async function main() {
     stdout: process.stdout,
   })
 
-  const resolutions = await genResolutions(project, report)
+  const resolutions = await xfs.mktempPromise(async (extractPath) => {
+    await downloadAndExtractYarn(project, extractPath, report)
+    const yarnProject = await readyYarnProject(extractPath, report)
+    return await genResolutions(yarnProject, report)
+  })
+
   await updateProjectResolutions(project, resolutions, report)
+  await updateInstall(project, report)
 
   await report.finalize()
   return report.exitCode()

@@ -14,22 +14,18 @@
  * limitations under the License.
  */
 
-require(`${__dirname}/../.pnp.js`).setup()
+// types
 
-require('ts-node').register({
-  compiler: 'ttypescript',
-  transpileOnly: true,
-  project: `${__dirname}/../tsconfig.base.json`,
-})
+import type {
+  Plugin 
+} from '@yarnpkg/core'
 
-global.YARN_VERSION = require(`@larry1123/yarn-contrib/package.json`).resolutions[
-  '@yarnpkg/cli'
-]
+// imports
 
-const {
- runYarn 
-} = require('@larry1123/yarn-plugin-tools')
+import {
+  ReleaseTags 
+} from './commands'
 
-const disabledPlugins = process.env.DISABLED_PLUGINS
+const plugin: Plugin = { commands: [ReleaseTags] }
 
-runYarn(process.cwd(), disabledPlugins).catch(console.error.bind(console))
+export default plugin

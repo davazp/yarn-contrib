@@ -28,8 +28,13 @@ async function main() {
         configuration,
         stdout: process.stdout,
     });
-    const resolutions = await yarnResolutions_1.genResolutions(project, report);
+    const resolutions = await fslib_1.xfs.mktempPromise(async (extractPath) => {
+        await yarnResolutions_1.downloadAndExtractYarn(project, extractPath, report);
+        const yarnProject = await yarnResolutions_1.readyYarnProject(extractPath, report);
+        return await yarnResolutions_1.genResolutions(yarnProject, report);
+    });
     await yarnResolutions_1.updateProjectResolutions(project, resolutions, report);
+    await yarnResolutions_1.updateInstall(project, report);
     await report.finalize();
     return report.exitCode();
 }

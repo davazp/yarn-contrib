@@ -1,3 +1,4 @@
+"use strict";
 /*
  * Copyright 2020 Larry1123
  *
@@ -13,23 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-require(`${__dirname}/../.pnp.js`).setup()
-
-require('ts-node').register({
-  compiler: 'ttypescript',
-  transpileOnly: true,
-  project: `${__dirname}/../tsconfig.base.json`,
-})
-
-global.YARN_VERSION = require(`@larry1123/yarn-contrib/package.json`).resolutions[
-  '@yarnpkg/cli'
-]
-
-const {
- runYarn 
-} = require('@larry1123/yarn-plugin-tools')
-
-const disabledPlugins = process.env.DISABLED_PLUGINS
-
-runYarn(process.cwd(), disabledPlugins).catch(console.error.bind(console))
+Object.defineProperty(exports, "__esModule", { value: true });
+// imports
+const commands_1 = require("./commands");
+const plugin = { commands: [commands_1.ReleaseTags] };
+exports.default = plugin;

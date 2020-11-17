@@ -26,8 +26,7 @@
     "tslib": "^2.0.2"
   },
   "devDependencies": {
-    "@yarnpkg/fslib": "^2.2.2",
-    "typescript-transform-paths": "^2.0.1"
+    "@yarnpkg/fslib": "^2.2.2"
   },
   "peerDependencies": {
     "@yarnpkg/core": "*"

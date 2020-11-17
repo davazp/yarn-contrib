@@ -14,6 +14,12 @@
  * limitations under the License.
  */
 
+// types
+
+import type {
+  PortablePath 
+} from '@yarnpkg/fslib'
+
 // imports
 
 import {
@@ -32,66 +38,79 @@ import {
   parseResolution 
 } from '@yarnpkg/parsers'
 import {
-  CwdFS,
-  xfs 
+  CwdFS 
 } from '@yarnpkg/fslib'
 
 const yarnDownloadUrl = 'https://github.com/yarnpkg/berry/archive/master.tar.gz'
 
-export async function genResolutions(
+export async function downloadYarnRepo(
   project: Project,
   report: Report,
-): Promise<Map<string, string>> {
-  const sourceBuffer: Buffer = await report.startTimerPromise(
+): Promise<Buffer> {
+  return await report.startTimerPromise(
     'Downloading yarn repo archive',
     async () => {
       return (await httpUtils.get(yarnDownloadUrl, {configuration: project.configuration})) as Buffer
     },
   )
-  return await xfs.mktempPromise(async (extractPath) => {
-    const extractTarget = new CwdFS(extractPath)
+}
 
-    await report.startTimerPromise('Extracting yarn repo', async () => {
-      await tgzUtils.extractArchiveTo(sourceBuffer, extractTarget, {stripComponents: 1})
-    })
-
-    const configuration = await Configuration.find(
-      extractPath,
-      getPluginConfiguration(),
-      {
-        usePath: false,
-        strict: false,
-      },
-    )
-    const {
-      project: yarnProject 
-    } = await Project.find(
-      configuration,
-      extractPath,
-    )
-
-    await yarnProject.restoreInstallState()
-
-    const resolutions: Map<string, string> = new Map<string, string>()
-    for (const workspace of yarnProject.workspaces) {
-      if (workspace.manifest.private) {
-        continue
-      }
-      resolutions.set(
-        structUtils.stringifyIdent(workspace.locator),
-        workspace.manifest.version ?? '0.0.0',
-      )
-      if (workspace.locator.name === 'core') {
-        resolutions.set(
-          'clipanion',
-          workspace.manifest.dependencies.get(
-            structUtils.makeIdent(null, 'clipanion').identHash,
-          )?.range ?? '0.0.0',
-        )
-      }
-    }
-    return resolutions
+export async function downloadAndExtractYarn(
+  project: Project,
+  extractPath: PortablePath,
+  report: Report,
+): Promise<void> {
+  const sourceBuffer = await downloadYarnRepo(project, report)
+  const extractTarget = new CwdFS(extractPath)
+  await report.startTimerPromise('Extracting yarn repo', async () => {
+    await tgzUtils.extractArchiveTo(sourceBuffer, extractTarget, {stripComponents: 1})
   })
+}
+
+export async function readyYarnProject(
+  yarnPath: PortablePath,
+  report: Report,
+): Promise<Project> {
+  report.reportInfo(null, 'Readying yarn project')
+  const configuration = await Configuration.find(
+    yarnPath,
+    getPluginConfiguration(),
+    {
+      usePath: false,
+      strict: false,
+    },
+  )
+  const {
+    project: yarnProject 
+  } = await Project.find(configuration, yarnPath)
+  await yarnProject.restoreInstallState()
+  return yarnProject
+}
+
+export async function genResolutions(
+  yarnProject: Project,
+  report: Report,
+): Promise<Map<string, string>> {
+  report.reportInfo(null, 'Getting yarn workspaces versions.')
+  const resolutions: Map<string, string> = new Map<string, string>()
+  for (const workspace of yarnProject.workspaces) {
+    if (workspace.manifest.private) {
+      continue
+    }
+    resolutions.set(
+      structUtils.stringifyIdent(workspace.locator),
+      workspace.manifest.version ?? '0.0.0',
+    )
+    if (workspace.locator.name === 'core') {
+      resolutions.set(
+        'clipanion',
+        workspace.manifest.dependencies.get(
+          structUtils.makeIdent(null, 'clipanion').identHash,
+        )?.range ?? '0.0.0',
+      )
+    }
+  }
+  return resolutions
 }
 
 export async function updateProjectResolutions(
@@ -108,8 +127,14 @@ export async function updateProjectResolutions(
       reference: version,
     })
   }
+  report.reportInfo(null, 'Persisting Manifest')
   await project.topLevelWorkspace.persistManifest()
+}
 
+export async function updateInstall(
+  project: Project,
+  report: Report,
+): Promise<void> {
   report.reportInfo(null, 'Running install to update project')
   const passThrough = report.createStreamReporter()
   await execUtils.pipevp('yarn', ['install'], {

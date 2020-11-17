@@ -13,5 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import * as dependenciesUtils from "./dependenciesUtils";
+import * as dependenciesUtils from './dependenciesUtils';
 export { dependenciesUtils };

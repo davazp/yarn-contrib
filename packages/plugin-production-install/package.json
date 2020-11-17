@@ -31,8 +31,7 @@
   },
   "devDependencies": {
     "@yarnpkg/plugin-pnp": "^2.3.0",
-    "@yarnpkg/plugin-version": "^2.2.0",
-    "typescript-transform-paths": "^2.0.1"
+    "@yarnpkg/plugin-version": "^2.2.0"
   },
   "peerDependencies": {
     "@yarnpkg/cli": "*",

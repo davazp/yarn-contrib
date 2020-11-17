@@ -24,11 +24,9 @@ const core_1 = require("@yarnpkg/core");
 const cli_1 = require("@yarnpkg/cli");
 const fslib_1 = require("@yarnpkg/fslib");
 const parsers_1 = require("@yarnpkg/parsers");
-const disabledPlugins = process.env.DISABLED_PLUGINS;
 const debug = debug_1.default('@larry1123/yarn-plugin-tools:run-yarn');
-async function run() {
+async function run(cwd = process.cwd(), disabledPlugins) {
     var _a, _b, _c;
-    const cwd = process.cwd();
     const configuration = await core_1.Configuration.find(cwd, null, {
         strict: false,
         usePath: false,

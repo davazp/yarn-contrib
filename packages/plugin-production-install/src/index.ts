@@ -97,8 +97,8 @@ class ProdInstall extends Command<CommandContext> {
   @Command.Boolean(`--json`)
   json = false
 
-  @Command.Boolean(`--strip-types`)
-  stripTypes = true
+  @Command.Boolean(`--no-strip-types`)
+  noStripTypes = false
 
   @Command.Boolean(`--pack`)
   pack = false
@@ -215,7 +215,7 @@ class ProdInstall extends Command<CommandContext> {
               this.context.plugins,
             )
 
-            if (this.stripTypes) {
+            if (!this.noStripTypes) {
               for (const [
                 ident,
                 extensionsByIdent,
@@ -262,7 +262,7 @@ class ProdInstall extends Command<CommandContext> {
             const resolver = new ProductionInstallResolver({
               project,
               resolver: multiResolver,
-              stripTypes: this.stripTypes,
+              stripTypes: !this.noStripTypes,
             })
 
             const fetcher = new ProductionInstallFetcher({

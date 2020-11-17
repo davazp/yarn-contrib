@@ -1,2 +1,2 @@
-import * as dependenciesUtils from "./dependenciesUtils";
+import * as dependenciesUtils from './dependenciesUtils';
 export { dependenciesUtils };

@@ -277,7 +277,6 @@ __metadata:
     tslib: ^2.0.2
     ttypescript: ^1.5.12
     typescript: ^4.0.3
-    typescript-transform-paths: ^2.0.1
   languageName: unknown
   linkType: soft
 
@@ -302,7 +301,6 @@ __metadata:
     "@yarnpkg/plugin-version": ^2.2.0
     clipanion: ^2.6.2
     tslib: ^2.0.2
-    typescript-transform-paths: ^2.0.1
   peerDependencies:
     "@yarnpkg/cli": "*"
     "@yarnpkg/core": "*"
@@ -316,6 +314,26 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@larry1123/yarn-plugin-release@workspace:packages/plugin-release":
+  version: 0.0.0-use.local
+  resolution: "@larry1123/yarn-plugin-release@workspace:packages/plugin-release"
+  dependencies:
+    "@types/node": ^12.0.0
+    "@yarnpkg/cli": ^2.3.3
+    "@yarnpkg/core": ^2.3.1
+    "@yarnpkg/plugin-pack": ^2.2.2
+    "@yarnpkg/plugin-version": ^2.2.0
+    clipanion: ^2.6.2
+    tslib: ^2.0.3
+  peerDependencies:
+    "@yarnpkg/cli": "*"
+    "@yarnpkg/core": "*"
+    "@yarnpkg/plugin-pack": "*"
+    "@yarnpkg/plugin-version": "*"
+    clipanion: "*"
+  languageName: unknown
+  linkType: soft
+
 "@larry1123/yarn-plugin-script-lifecycles@workspace:packages/plugin-script-lifecycles":
   version: 0.0.0-use.local
   resolution: "@larry1123/yarn-plugin-script-lifecycles@workspace:packages/plugin-script-lifecycles"
@@ -324,7 +342,6 @@ __metadata:
     "@yarnpkg/core": ^2.3.0
     "@yarnpkg/fslib": ^2.2.2
     tslib: ^2.0.2
-    typescript-transform-paths: ^2.0.1
   peerDependencies:
     "@yarnpkg/core": "*"
   dependenciesMeta:
@@ -347,7 +364,6 @@ __metadata:
     debug: ^4.2.0
     micromatch: ^4.0.2
     tslib: ^2.0.3
-    typescript-transform-paths: ^2.0.1
   languageName: unknown
   linkType: soft
 
@@ -358,7 +374,6 @@ __metadata:
     "@types/node": ^12.0.0
     "@yarnpkg/core": ^2.3.0
     tslib: ^2.0.2
-    typescript-transform-paths: ^2.0.1
   dependenciesMeta:
     "@types/node":
       optional: true
@@ -911,9 +926,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@yarnpkg/cli@npm:2.3.2":
-  version: 2.3.2
-  resolution: "@yarnpkg/cli@npm:2.3.2"
+"@yarnpkg/cli@npm:2.3.3":
+  version: 2.3.3
+  resolution: "@yarnpkg/cli@npm:2.3.3"
   dependencies:
     "@yarnpkg/core": ^2.3.1
     "@yarnpkg/fslib": ^2.3.0
@@ -928,7 +943,7 @@ __metadata:
     "@yarnpkg/plugin-http": ^2.1.1
     "@yarnpkg/plugin-init": ^2.2.1
     "@yarnpkg/plugin-link": ^2.1.1
-    "@yarnpkg/plugin-node-modules": ^2.2.1
+    "@yarnpkg/plugin-node-modules": ^2.2.2
     "@yarnpkg/plugin-npm": ^2.3.0
     "@yarnpkg/plugin-npm-cli": ^2.2.0
     "@yarnpkg/plugin-pack": ^2.2.2
@@ -944,7 +959,7 @@ __metadata:
     yup: ^0.27.0
   peerDependencies:
     "@yarnpkg/core": ^2.3.1
-  checksum: 3d0127a9f4c9efac386c1493a408d32d9f89b689f4adf25bfa2137e004c7e5ea6130bd67bf6cf4615e563f4e835716a40a13fbbde07e38d413d284b02d49202a
+  checksum: 594a6a657bf0e60c0f0b8e77faf80c6d781faa7e828ffc834909b50516854619305686a1f8e6c4e092b09ccb2db65c7b702ebda238027f3f28c2fe5296e896f4
   languageName: node
   linkType: hard
 
@@ -1167,24 +1182,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@yarnpkg/plugin-node-modules@npm:2.2.1":
-  version: 2.2.1
-  resolution: "@yarnpkg/plugin-node-modules@npm:2.2.1"
+"@yarnpkg/plugin-node-modules@npm:2.2.2":
+  version: 2.2.2
+  resolution: "@yarnpkg/plugin-node-modules@npm:2.2.2"
   dependencies:
-    "@yarnpkg/fslib": ^2.2.2
+    "@yarnpkg/fslib": ^2.3.0
     "@yarnpkg/libzip": ^2.2.1
-    "@yarnpkg/parsers": ^2.2.1
-    "@yarnpkg/plugin-pnp": ^2.3.0
-    "@yarnpkg/pnp": ^2.3.0
-    "@yarnpkg/pnpify": ^2.3.1
+    "@yarnpkg/parsers": ^2.3.0
+    "@yarnpkg/plugin-pnp": ^2.3.1
+    "@yarnpkg/pnp": ^2.3.1
+    "@yarnpkg/pnpify": ^2.3.3
     "@zkochan/cmd-shim": ^4.3.0
     clipanion: ^2.6.2
     micromatch: ^4.0.2
     tslib: ^1.13.0
   peerDependencies:
-    "@yarnpkg/cli": ^2.3.1
-    "@yarnpkg/core": ^2.3.0
-  checksum: ae5fe65f492262bd6c58a756c73a3c4fda84e9da306ef2c3864a190c2952ecdbe2613060e148a1414db03cb76c3931b34acbba4dfec06bc87d58c6856230de23
+    "@yarnpkg/cli": ^2.3.3
+    "@yarnpkg/core": ^2.3.1
+  checksum: c4102641c38d1dec9a788430807193e1fec46cdc0efd47415af63e80ba79bd3edd65fdad0312ff05033447bb96a40d387c0d0f33aaf37ddbdeba30e9dbc6d6f1
   languageName: node
   linkType: hard
 
@@ -1318,9 +1333,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@yarnpkg/pnpify@npm:2.3.2":
-  version: 2.3.2
-  resolution: "@yarnpkg/pnpify@npm:2.3.2"
+"@yarnpkg/pnpify@npm:2.3.3":
+  version: 2.3.3
+  resolution: "@yarnpkg/pnpify@npm:2.3.3"
   dependencies:
     "@yarnpkg/core": ^2.3.1
     "@yarnpkg/fslib": ^2.3.0
@@ -1340,7 +1355,7 @@ __metadata:
       optional: true
   bin:
     pnpify: ./lib/cli.js
-  checksum: 9b125533af2877091aedebe0356f1b98c7f10bf3a5fc3820afee8dfc13bffcdb38d412647fe4d02d3e01210237e5a922e6a21354c65ae2462d5ef98bd921d974
+  checksum: 80ccd1a56083913c105d7028ca63bac2fd62883404bf929fe1bea12c0768d6e0f981a61654115e6bbe700309887cafe108c0bce7a4bd603d8cbaeb29773c5014
   languageName: node
   linkType: hard
 
@@ -5364,13 +5379,6 @@ sort-package-json@^1.46.0:
   version: 0.8.1
   resolution: "type-fest@npm:0.8.1"
   checksum: f8c4b4249f52e8bea7a4fc55b3653c96c2d547240e4c772e001d02b7cc38b8c3eb493ab9fbe985a76a203cd1aa7044776b728a71ba12bf36e7131f989597885b
-  languageName: node
-  linkType: hard
-
-"typescript-transform-paths@npm:2.0.1":
-  version: 2.0.1
-  resolution: "typescript-transform-paths@npm:2.0.1"
-  checksum: e47527a36c715888dcc8228c9937411102d19acc7fedebead81a6403f7cbf330bda88f609f62c594ef315761bdc5429259d56a11ae1766ef92241dcefd92df13
   languageName: node
   linkType: hard
 
