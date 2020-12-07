@@ -1,3 +1,9 @@
+# This plugin will be renamed soon!
+
+I am planning on changing the plugin to support more than just production installs.
+As such I will be renaming this to be simply `plugin-installs`.
+I will for a time maintain the current file path for the output bundle and rename.
+
 # Yarn Plugin Production Install
 
 This plugin will create a minimal yarn install for a workspace.

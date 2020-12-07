@@ -15,7 +15,5 @@
  * limitations under the License.
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-// imports
-const commands_1 = require("./commands");
-const plugin = { commands: [commands_1.ProdInstall] };
-exports.default = plugin;
+const tslib_1 = require("tslib");
+tslib_1.__exportStar(require("./productionInstall"), exports);
