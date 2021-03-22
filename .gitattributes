@@ -1,7 +1,6 @@
 * text=auto
 /.pnp.js binary linguist-generated
 /.yarn/** linguist-vendored
-/.yarn/cache/* filter=lfs diff=lfs merge=lfs -text
 /.yarn/plugins/*.js binary linguist-vendored
 /.yarn/releases/*.js binary linguist-vendored
 

@@ -21,7 +21,7 @@ This plugin will create a minimal yarn install for a workspace.
 - The yarn cache will be copied and trimmed of extraneous packages accordingly.
 - `package.json`, yarn settings and plugins are included.
 - Removes `@types/*` that would otherwise be included by default.
-- `--pack` will run pack on the workspace and copy the files into the `outDir`
+- `--pack` will pack the workspace and copy the files into the `outDir`, this behaves the same as `yarn pack`
 - Removes `patch:` source from the yarn cache if it is unused, this includes `@yarnpkg/plugin-compat` patches of things like `typescript`.
 
 ## Install instructions
